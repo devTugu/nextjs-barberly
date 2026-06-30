@@ -1,0 +1,123 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useTenants, type Tenant } from '@/entities/tenant';
+import { useTenantColumns } from '@/entities/tenant/ui/tenant-columns';
+import { useAuthPermissions } from '@/features/auth';
+import { PERMISSION_CODES } from '@/shared/config/permissions';
+import { ROUTES } from '@/shared/config/routes';
+import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
+import { AdminTableActions } from '@/widgets/admin-table-actions';
+import {
+  DataTable,
+  DataTableToolbar,
+  DataTableEmpty,
+  DataTableQueryState,
+} from '@/widgets/data-table';
+import { Button } from '@/shared/ui/button';
+import { TenantManageSheet, type TenantSheetState } from './tenant-manage-sheet';
+import { TenantDeleteDialog } from './tenant-delete-dialog';
+
+export function TenantsTable() {
+  const t = useTranslations('entities.tenants');
+  const tCommon = useTranslations('common');
+  const { can } = useAuthPermissions();
+  const tenantColumns = useTenantColumns();
+  const { pagination, setPagination, onSearchChange, queryParams, search } =
+    useTableSearchParams();
+  const { data, isLoading, isError, error, refetch } = useTenants(queryParams);
+  const [sheetState, setSheetState] = useState<TenantSheetState | null>(null);
+  const [deleteTenant, setDeleteTenant] = useState<Tenant | null>(null);
+
+  const columns = useMemo<ColumnDef<Tenant, unknown>[]>(
+    () => [
+      ...tenantColumns,
+      {
+        id: 'shop',
+        header: () => <span className="sr-only">{t('openShop')}</span>,
+        cell: ({ row }) => (
+          <Button variant="ghost" size="sm" asChild>
+            <Link
+              href={`${ROUTES.SHOP_BOOKINGS}?tenant=${encodeURIComponent(row.original.subdomain)}`}
+            >
+              <ExternalLink className="mr-1 size-3.5" />
+              {t('openShop')}
+            </Link>
+          </Button>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">{tCommon('actions')}</span>,
+        cell: ({ row }) => (
+          <AdminTableActions
+            name={row.original.name}
+            updatePermission={PERMISSION_CODES.TENANT_UPDATE}
+            deletePermission={PERMISSION_CODES.TENANT_DELETE}
+            onEdit={() =>
+              setSheetState({ mode: 'edit', tenant: row.original })
+            }
+            onDelete={() => setDeleteTenant(row.original)}
+          />
+        ),
+      },
+    ],
+    [tenantColumns, t, tCommon],
+  );
+
+  const canCreate = can(PERMISSION_CODES.TENANT_CREATE);
+
+  return (
+    <DataTableQueryState isError={isError} error={error} refetch={refetch}>
+      <div className="space-y-4">
+        <DataTableToolbar
+          initialSearch={search}
+          onSearchChange={onSearchChange}
+          placeholder={t('searchPlaceholder')}
+        >
+          {canCreate ? (
+            <Button size="sm" onClick={() => setSheetState({ mode: 'create' })}>
+              {t('addTenant')}
+            </Button>
+          ) : null}
+        </DataTableToolbar>
+        <DataTable
+          columns={columns}
+          data={data?.items ?? []}
+          pageCount={data?.totalPages ?? 0}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          isLoading={isLoading}
+          emptyContent={
+            <DataTableEmpty
+              title={t('emptyTitle')}
+              action={
+                canCreate ? (
+                  <Button
+                    size="sm"
+                    onClick={() => setSheetState({ mode: 'create' })}
+                  >
+                    {t('addTenant')}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
+        />
+        <TenantManageSheet
+          state={sheetState}
+          onOpenChange={(open) => !open && setSheetState(null)}
+        />
+        <TenantDeleteDialog
+          tenant={deleteTenant}
+          open={Boolean(deleteTenant)}
+          onOpenChange={(open) => !open && setDeleteTenant(null)}
+        />
+      </div>
+    </DataTableQueryState>
+  );
+}
