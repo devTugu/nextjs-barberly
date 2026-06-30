@@ -32,7 +32,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}/portfolio-admin:${{ github.ref_name }}
 
       - name: Trivy scan Admin image
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository }}/portfolio-admin:${{ github.ref_name }}
           severity: CRITICAL,HIGH
