@@ -12,13 +12,13 @@ if [[ "${ready_status}" != "200" ]]; then
 fi
 echo "OK: /health/ready → 200"
 
-echo "Smoke: Frontend sign-in..."
-sign_in_status="$(curl -s -o /dev/null -w '%{http_code}' "${SMOKE_BASE_URL}/sign-in")"
+echo "Smoke: Frontend login..."
+sign_in_status="$(curl -s -o /dev/null -w '%{http_code}' "${SMOKE_BASE_URL}/login")"
 if [[ "${sign_in_status}" != "200" ]]; then
-  echo "FAIL: /sign-in returned ${sign_in_status}"
+  echo "FAIL: /login returned ${sign_in_status}"
   exit 1
 fi
-echo "OK: /sign-in → 200"
+echo "OK: /login → 200"
 
 if [[ "${SMOKE_LOGIN:-false}" == "true" ]]; then
   echo "Smoke: BFF CSRF..."

@@ -18,9 +18,18 @@ export async function refreshTokenPair(
   return envelope.data;
 }
 
-export async function fetchAuthMe(accessToken: string): Promise<Response> {
+export async function fetchAuthMe(
+  accessToken: string,
+  tenantSubdomain?: string,
+): Promise<Response> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+  };
+  if (tenantSubdomain) {
+    headers['X-Tenant-Subdomain'] = tenantSubdomain;
+  }
   return fetchInternal('/auth/me', {
     method: 'GET',
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers,
   });
 }

@@ -23,6 +23,8 @@ export default defineConfig({
           env: {
             API_INTERNAL_URL:
               process.env.API_INTERNAL_URL ?? 'http://localhost:3001/api/v1',
+            NEXT_PUBLIC_OTP_DEV_BYPASS_CODE:
+              process.env.NEXT_PUBLIC_OTP_DEV_BYPASS_CODE ?? '000000',
           },
         },
       }),

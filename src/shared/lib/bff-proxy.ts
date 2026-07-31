@@ -97,6 +97,11 @@ export async function proxyToBackend(
     responseHeaders.set('content-type', contentType);
   }
 
+  const contentDisposition = upstream.headers.get('content-disposition');
+  if (contentDisposition) {
+    responseHeaders.set('content-disposition', contentDisposition);
+  }
+
   return new NextResponse(upstream.body, {
     status: upstream.status,
     headers: responseHeaders,

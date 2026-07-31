@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api';
 import { listQueryOptions } from '@/shared/api/list-query-options';
 import { API_ENDPOINTS } from '@/shared/config/api.config';
-import { shopQueryParams } from '@/shared/hooks/use-shop-tenant';
+import { tenantQueryParams } from '@/shared/hooks/use-tenant-subdomain';
 import type { ServiceOutput } from '../types/service';
 
 export const serviceKeys = {
@@ -21,7 +21,7 @@ export const useServices = (tenant: string) => {
     queryKey: serviceKeys.list(tenant),
     queryFn: () =>
       api.get<ServiceOutput[]>(API_ENDPOINTS.SERVICES.LIST, {
-        params: shopQueryParams(tenant),
+        params: tenantQueryParams(tenant),
       }),
     ...listQueryOptions,
   });
@@ -32,7 +32,7 @@ export const useService = (tenant: string, id: number, enabled = true) => {
     queryKey: serviceKeys.detail(tenant, id),
     queryFn: () =>
       api.get<ServiceOutput>(API_ENDPOINTS.SERVICES.BY_ID(id), {
-        params: shopQueryParams(tenant),
+        params: tenantQueryParams(tenant),
       }),
     enabled: enabled && id > 0,
   });

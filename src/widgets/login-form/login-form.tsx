@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -17,6 +17,7 @@ import {
 } from '@/features/auth';
 import { MfaEnrollmentStep } from '@/features/auth/ui/mfa-enrollment-step';
 import { MfaVerifyForm } from '@/features/mfa/ui/mfa-verify-form';
+import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
 import { ROUTES } from '@/shared/config/routes';
 import { getErrorMessage } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
@@ -34,13 +35,37 @@ import { OAuthSignInButton } from '@/widgets/oauth-sign-in-button';
 
 type SignInStep = 'credentials' | 'mfa-verify' | 'mfa-enroll';
 
-interface LoginFormProps {
-  onStepChange?: (step: SignInStep) => void;
+function resolvePostLoginPath(
+  redirectTo: string | undefined,
+  nextParam: string | null,
+  pathname: string,
+): string {
+  const candidate = redirectTo ?? nextParam;
+  if (candidate?.startsWith('/') && !candidate.startsWith('//')) {
+    return candidate;
+  }
+
+  return pathname.startsWith('/admin')
+    ? ROUTES.ADMIN_DASHBOARD
+    : ROUTES.PLATFORM_DASHBOARD;
 }
 
-export function LoginForm({ onStepChange }: LoginFormProps) {
+interface LoginFormProps {
+  onStepChange?: (step: SignInStep) => void;
+  redirectTo?: string;
+}
+
+export function LoginForm({ onStepChange, redirectTo }: LoginFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const postLoginPath = resolvePostLoginPath(
+    redirectTo,
+    searchParams.get('next'),
+    pathname,
+  );
   const t = useTranslations('auth');
+  const tMfa = useTranslations('mfa');
   const tVal = useTranslations('validation');
   const login = useLogin();
   const verifyMfa = useVerifyMfaLogin();
@@ -94,7 +119,7 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
       }
 
       toast.success(t('welcomeBack'));
-      router.push(ROUTES.DASHBOARD);
+      router.push(postLoginPath);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -106,9 +131,9 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
     try {
       await verifyMfa.mutateAsync({ mfaToken, code: totpCode });
       toast.success(t('welcomeBack'));
-      router.push(ROUTES.DASHBOARD);
+      router.push(postLoginPath);
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(resolveMfaErrorMessage(error, tMfa));
     }
   };
 
@@ -117,7 +142,7 @@ export function LoginForm({ onStepChange }: LoginFormProps) {
 
     await confirmEnrollment.mutateAsync({ enrollmentToken, code });
     toast.success(t('mfaEnabledWelcome'));
-    router.push(ROUTES.DASHBOARD);
+    router.push(postLoginPath);
   };
 
   if (step === 'mfa-enroll' && enrollmentToken) {

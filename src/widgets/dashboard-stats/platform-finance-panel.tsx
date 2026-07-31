@@ -1,23 +1,29 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import {
   ArrowDownLeft,
   ArrowUpRight,
   Banknote,
   CalendarDays,
+  Download,
   Percent,
   Store,
   Wallet,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { usePlatformFinance } from '@/entities/dashboard';
+import { toast } from 'sonner';
+import {
+  downloadPlatformFinanceCsv,
+  usePlatformFinance,
+} from '@/entities/dashboard';
 import { usePlatformFinanceColumns } from '@/entities/dashboard/ui/platform-finance-columns';
 import {
   DataTable,
   DataTableEmpty,
   DataTableQueryState,
 } from '@/widgets/data-table';
+import { Button } from '@/shared/ui/button';
 import {
   Card,
   CardContent,
@@ -28,6 +34,8 @@ import {
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { PageError } from '@/shared/ui/page-states';
+import { getErrorMessage } from '@/shared/api';
 import { cn } from '@/shared/lib/utils';
 
 function currentMonthKey(): string {
@@ -81,30 +89,74 @@ function FinanceStat({
   );
 }
 
-export function PlatformFinancePanel() {
+export function PlatformFinancePanel({
+  showHeading = true,
+}: {
+  showHeading?: boolean;
+}) {
   const t = useTranslations('dashboard.finance');
   const [month, setMonth] = useState(currentMonthKey);
+  const [isExporting, startExport] = useTransition();
+  const [exportError, setExportError] = useState<Error | null>(null);
   const columns = usePlatformFinanceColumns();
   const { data, isLoading, isError, error, refetch } = usePlatformFinance(month);
 
   const tableColumns = useMemo(() => columns, [columns]);
   const summary = data?.summary;
 
+  const handleExport = () => {
+    setExportError(null);
+    startExport(async () => {
+      try {
+        await downloadPlatformFinanceCsv(month);
+        toast.success(t('exportSuccess'));
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error(t('exportError'));
+        setExportError(error);
+        toast.error(getErrorMessage(err) || t('exportError'));
+      }
+    });
+  };
+
   return (
     <section className="space-y-4">
+      {exportError ? (
+        <PageError error={exportError} reset={() => setExportError(null)} />
+      ) : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h3 className="text-sm font-medium">{t('title')}</h3>
-          <p className="text-muted-foreground text-sm">{t('description')}</p>
-        </div>
-        <div className="grid w-full max-w-xs gap-2">
-          <Label htmlFor="finance-month">{t('month')}</Label>
-          <Input
-            id="finance-month"
-            type="month"
-            value={month}
-            onChange={(event) => setMonth(event.target.value)}
-          />
+        {showHeading ? (
+          <div>
+            <h3 className="text-sm font-medium">{t('title')}</h3>
+            <p className="text-muted-foreground text-sm">{t('description')}</p>
+          </div>
+        ) : (
+          <div>
+            <h3 className="text-sm font-medium">{t('monthlyBreakdown')}</h3>
+            <p className="text-muted-foreground text-sm">
+              {t('monthlyBreakdownDescription')}
+            </p>
+          </div>
+        )}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="grid w-full max-w-xs gap-2">
+            <Label htmlFor="finance-month">{t('month')}</Label>
+            <Input
+              id="finance-month"
+              type="month"
+              value={month}
+              onChange={(event) => setMonth(event.target.value)}
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExport}
+            disabled={isExporting || isLoading}
+          >
+            <Download className="size-4" aria-hidden />
+            {isExporting ? t('exporting') : t('exportCsv')}
+          </Button>
         </div>
       </div>
 

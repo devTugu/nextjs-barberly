@@ -8,6 +8,6 @@ test.describe('Auth', () => {
 
     await page.getByRole('button', { name: process.env.E2E_ADMIN_EMAIL ?? 'admin@example.com' }).click();
     await page.getByText('Log out').click();
-    await expect(page).toHaveURL(/\/sign-in/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
   });
 });

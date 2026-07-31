@@ -5,16 +5,22 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   ArrowRight,
+  BarChart3,
+  Banknote,
   KeyRound,
   LayoutDashboard,
   Shield,
   Store,
   Users,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
-import { useDashboardStats } from '@/entities/dashboard';
+import { useMemo } from 'react';
+import { useDashboardStats, usePlatformFinance } from '@/entities/dashboard';
+import { useWithdrawals } from '@/entities/withdrawal/api/queries';
 import { useAuthPermissions } from '@/features/auth';
 import { useAuthStore } from '@/features/auth/model/store';
+import { usePageVisible } from '@/shared/hooks/use-page-visible';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
 import { Button } from '@/shared/ui/button';
@@ -29,26 +35,34 @@ import {
 import { Separator } from '@/shared/ui/separator';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { cn } from '@/shared/lib/utils';
-import { PlatformFinancePanel } from './platform-finance-panel';
 
 interface StatCardProps {
   title: string;
-  value: number;
+  value?: number;
+  valueText?: string;
   loading: boolean;
   icon: LucideIcon;
   href?: string;
-  accent?: 'blue' | 'violet' | 'amber';
+  accent?: 'blue' | 'violet' | 'amber' | 'emerald';
 }
 
 const accentStyles = {
   blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   violet: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
   amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
 } as const;
+
+function currentMonthKey(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${now.getFullYear()}-${month}`;
+}
 
 function StatCard({
   title,
   value,
+  valueText,
   loading,
   icon: Icon,
   href,
@@ -66,7 +80,15 @@ function StatCard({
       <CardHeader className="px-4">
         <CardDescription className="line-clamp-1">{title}</CardDescription>
         <CardTitle className="text-3xl font-semibold tabular-nums">
-          {loading ? <Skeleton className="h-8 w-14" /> : value}
+          {loading ? (
+            <Skeleton className="h-8 w-14" />
+          ) : valueText ? (
+            valueText
+          ) : value !== undefined ? (
+            value
+          ) : (
+            <span className="text-xl">{t('open')}</span>
+          )}
         </CardTitle>
         <CardAction>
           <div
@@ -126,9 +148,23 @@ function OverviewSection({
 
 export function DashboardOverview() {
   const t = useTranslations('dashboard');
+  const tPlatform = useTranslations('platformDashboard');
   const { can } = useAuthPermissions();
   const user = useAuthStore((state) => state.user);
   const { data: stats, isLoading } = useDashboardStats();
+  const month = useMemo(() => currentMonthKey(), []);
+  const showFinance = can(PERMISSION_CODES.TENANT_READ);
+  const showPendingWithdrawals = can(PERMISSION_CODES.WALLET_READ);
+  const pageVisible = usePageVisible();
+  const { data: finance, isLoading: financeLoading } = usePlatformFinance(
+    showFinance ? month : '',
+  );
+  const { data: pendingWithdrawals, isLoading: pendingLoading } =
+    useWithdrawals(
+      { page: 1, limit: 1, status: 'pending' },
+      showPendingWithdrawals,
+      showPendingWithdrawals && pageVisible ? 15_000 : false,
+    );
 
   const showSystemStats =
     can(PERMISSION_CODES.USER_READ) ||
@@ -153,16 +189,24 @@ export function DashboardOverview() {
         can(PERMISSION_CODES.USER_READ) ? (
           <CardContent className="flex flex-wrap gap-2">
             {can(PERMISSION_CODES.TENANT_READ) ? (
-              <Button variant="secondary" size="sm" asChild>
-                <Link href={ROUTES.TENANTS}>
-                  <Store className="size-4" aria-hidden />
-                  {t('tenants')}
-                </Link>
-              </Button>
+              <>
+                <Button variant="secondary" size="sm" asChild>
+                  <Link href={ROUTES.PLATFORM_ANALYTICS}>
+                    <BarChart3 className="size-4" aria-hidden />
+                    {t('analytics')}
+                  </Link>
+                </Button>
+                <Button variant="secondary" size="sm" asChild>
+                  <Link href={ROUTES.PLATFORM_TENANTS}>
+                    <Store className="size-4" aria-hidden />
+                    {t('tenants')}
+                  </Link>
+                </Button>
+              </>
             ) : null}
             {can(PERMISSION_CODES.USER_READ) ? (
               <Button variant="secondary" size="sm" asChild>
-                <Link href={ROUTES.USERS}>
+                <Link href={ROUTES.PLATFORM_USERS}>
                   <Users className="size-4" aria-hidden />
                   {t('users')}
                 </Link>
@@ -173,22 +217,50 @@ export function DashboardOverview() {
       </Card>
 
       {showPlatformStats ? (
-        <>
-          <OverviewSection
-            title={t('sectionPlatform')}
-            description={t('sectionPlatformDescription')}
-          >
+        <OverviewSection
+          title={t('sectionPlatform')}
+          description={t('sectionPlatformDescription')}
+        >
+          {showFinance ? (
             <StatCard
-              title={t('tenants')}
-              value={stats?.tenants ?? 0}
-              loading={isLoading}
-              icon={Store}
-              href={ROUTES.TENANTS}
-              accent="blue"
+              title={tPlatform('financeSnapshot')}
+              valueText={
+                finance
+                  ? `${finance.summary.grossPayments.toLocaleString()}₮`
+                  : undefined
+              }
+              loading={financeLoading}
+              icon={Banknote}
+              href={ROUTES.PLATFORM_ANALYTICS}
+              accent="emerald"
             />
-          </OverviewSection>
-          <PlatformFinancePanel />
-        </>
+          ) : null}
+          {showPendingWithdrawals ? (
+            <StatCard
+              title={tPlatform('pendingWithdrawals')}
+              value={pendingWithdrawals?.total ?? 0}
+              loading={pendingLoading}
+              icon={Wallet}
+              href={ROUTES.PLATFORM_WITHDRAWALS}
+              accent="amber"
+            />
+          ) : null}
+          <StatCard
+            title={t('analytics')}
+            loading={false}
+            icon={BarChart3}
+            href={ROUTES.PLATFORM_ANALYTICS}
+            accent="violet"
+          />
+          <StatCard
+            title={t('tenants')}
+            value={stats?.tenants ?? 0}
+            loading={isLoading}
+            icon={Store}
+            href={ROUTES.PLATFORM_TENANTS}
+            accent="blue"
+          />
+        </OverviewSection>
       ) : null}
 
       {showSystemStats ? (
@@ -202,7 +274,7 @@ export function DashboardOverview() {
               value={stats?.users ?? 0}
               loading={isLoading}
               icon={Users}
-              href={ROUTES.USERS}
+              href={ROUTES.PLATFORM_USERS}
               accent="blue"
             />
           ) : null}
@@ -212,7 +284,7 @@ export function DashboardOverview() {
               value={stats?.roles ?? 0}
               loading={isLoading}
               icon={Shield}
-              href={ROUTES.ROLES}
+              href={ROUTES.PLATFORM_ROLES}
               accent="violet"
             />
           ) : null}
@@ -222,7 +294,7 @@ export function DashboardOverview() {
               value={stats?.permissions ?? 0}
               loading={isLoading}
               icon={KeyRound}
-              href={ROUTES.PERMISSIONS}
+              href={ROUTES.PLATFORM_PERMISSIONS}
               accent="amber"
             />
           ) : null}

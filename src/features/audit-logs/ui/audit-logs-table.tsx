@@ -1,10 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useAuditLogs, type AuditLogOutput } from '@/entities/audit-log';
+import { useTenant } from '@/entities/tenant';
+import { ROUTES } from '@/shared/config/routes';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
+import { Button } from '@/shared/ui/button';
 import {
   DataTable,
   DataTableToolbar,
@@ -15,10 +20,22 @@ import {
 export function AuditLogsTable() {
   const t = useTranslations('entities.auditLogs');
   const tTable = useTranslations('table');
+  const searchParams = useSearchParams();
+  const tenantIdParam = searchParams.get('tenantId') ?? '';
+  const tenantId = tenantIdParam ? Number(tenantIdParam) : 0;
+  const { data: tenant } = useTenant(tenantId, tenantId > 0);
   const { pagination, setPagination, onSearchChange, queryParams, search } =
     useTableSearchParams();
 
-  const { data, isLoading, isError, error, refetch } = useAuditLogs(queryParams);
+  const apiParams = useMemo(
+    () => ({
+      ...queryParams,
+      ...(tenantId > 0 ? { tenantId } : {}),
+    }),
+    [queryParams, tenantId],
+  );
+
+  const { data, isLoading, isError, error, refetch } = useAuditLogs(apiParams);
 
   const columns = useMemo<ColumnDef<AuditLogOutput, unknown>[]>(
     () => [
@@ -38,6 +55,18 @@ export function AuditLogsTable() {
 
   return (
     <div className="space-y-4">
+      {tenantId > 0 ? (
+        <div className="bg-muted/50 flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm">
+          <p>
+            {t('tenantFilterLabel', {
+              name: tenant?.name ?? `#${tenantId}`,
+            })}
+          </p>
+          <Button variant="outline" size="sm" className="min-h-9" asChild>
+            <Link href={ROUTES.PLATFORM_AUDIT}>{t('tenantFilterClear')}</Link>
+          </Button>
+        </div>
+      ) : null}
       <DataTableToolbar
         initialSearch={search}
         onSearchChange={onSearchChange}

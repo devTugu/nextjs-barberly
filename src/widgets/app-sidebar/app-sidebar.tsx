@@ -1,18 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
+  BarChart3,
   ClipboardList,
+  Globe,
   KeyRound,
   LayoutDashboard,
-  Scissors,
   Shield,
   ShieldCheck,
   Store,
   Users,
+  Wallet,
 } from 'lucide-react';
+import { useWithdrawals } from '@/entities/withdrawal/api/queries';
 import { env } from '@/shared/config/env';
 import { ROUTES } from '@/shared/config/routes';
 import {
@@ -20,6 +24,7 @@ import {
   type PermissionCode,
 } from '@/shared/config/permissions';
 import { useAuthPermissions } from '@/features/auth';
+import { usePageVisible } from '@/shared/hooks/use-page-visible';
 import type { AppMessages } from '@/shared/i18n/messages';
 import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
 import {
@@ -31,124 +36,108 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/shared/ui/sidebar';
 import { NavUser } from './nav-user';
+import { NavSection, type NavSectionItem } from '@/widgets/shared/nav-section';
 
 type NavTitleKey = keyof AppMessages['nav'];
 
-interface NavItem {
-  titleKey: NavTitleKey;
-  href: string;
-  icon: typeof LayoutDashboard;
-  permission?: PermissionCode;
-}
+type NavItem = NavSectionItem<NavTitleKey>;
 
 const systemNavItems: NavItem[] = [
   {
     titleKey: 'overview',
-    href: ROUTES.DASHBOARD,
+    href: ROUTES.PLATFORM_DASHBOARD,
     icon: LayoutDashboard,
     permission: PERMISSION_CODES.DASHBOARD_READ,
   },
   {
     titleKey: 'users',
-    href: ROUTES.USERS,
+    href: ROUTES.PLATFORM_USERS,
     icon: Users,
     permission: PERMISSION_CODES.USER_READ,
   },
   {
     titleKey: 'roles',
-    href: ROUTES.ROLES,
+    href: ROUTES.PLATFORM_ROLES,
     icon: Shield,
     permission: PERMISSION_CODES.ROLE_READ,
   },
   {
     titleKey: 'permissions',
-    href: ROUTES.PERMISSIONS,
+    href: ROUTES.PLATFORM_PERMISSIONS,
     icon: KeyRound,
     permission: PERMISSION_CODES.PERMISSION_READ,
   },
   {
     titleKey: 'auditLogs',
-    href: ROUTES.AUDIT_LOGS,
+    href: ROUTES.PLATFORM_AUDIT,
     icon: ClipboardList,
     permission: PERMISSION_CODES.AUDIT_READ,
   },
   {
     titleKey: 'security',
-    href: ROUTES.SECURITY,
+    href: ROUTES.PLATFORM_SECURITY,
     icon: ShieldCheck,
   },
 ];
 
 const platformNavItems: NavItem[] = [
   {
+    titleKey: 'analytics',
+    href: ROUTES.PLATFORM_ANALYTICS,
+    icon: BarChart3,
+    permission: PERMISSION_CODES.TENANT_READ,
+  },
+  {
     titleKey: 'tenants',
-    href: ROUTES.TENANTS,
+    href: ROUTES.PLATFORM_TENANTS,
     icon: Store,
     permission: PERMISSION_CODES.TENANT_READ,
   },
   {
-    titleKey: 'shop',
-    href: `${ROUTES.SHOP_BOOKINGS}?tenant=demo`,
-    icon: Scissors,
-    permission: PERMISSION_CODES.BOOKING_READ,
+    titleKey: 'withdrawals',
+    href: ROUTES.PLATFORM_WITHDRAWALS,
+    icon: Wallet,
+    permission: PERMISSION_CODES.WALLET_READ,
+  },
+  {
+    titleKey: 'support',
+    href: ROUTES.PLATFORM_SUPPORT,
+    icon: Store,
+    permission: PERMISSION_CODES.TENANT_READ,
+  },
+  {
+    titleKey: 'platformLanding',
+    href: ROUTES.PLATFORM_LANDING,
+    icon: Globe,
+    permission: PERMISSION_CODES.TENANT_UPDATE,
   },
 ];
-
-function NavSection({
-  labelKey,
-  items,
-  pathname,
-  can,
-  tNav,
-}: {
-  labelKey: NavTitleKey;
-  items: NavItem[];
-  pathname: string;
-  can: (code: PermissionCode) => boolean;
-  tNav: ReturnType<typeof useTranslations<'nav'>>;
-}) {
-  const visibleItems = items.filter(
-    (item) => !item.permission || can(item.permission),
-  );
-
-  if (visibleItems.length === 0) return null;
-
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{tNav(labelKey)}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {visibleItems.map((item) => {
-            const title = tNav(item.titleKey);
-            return (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={title}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-}
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { can } = useAuthPermissions();
   const tNav = useTranslations('nav');
+  const showPendingWithdrawals = can(PERMISSION_CODES.WALLET_READ);
+  const pageVisible = usePageVisible();
+  const { data: pendingWithdrawals } = useWithdrawals(
+    { page: 1, limit: 1, status: 'pending' },
+    showPendingWithdrawals,
+    showPendingWithdrawals && pageVisible ? 15_000 : false,
+  );
+  const platformItems = useMemo(
+    () =>
+      platformNavItems.map((item) =>
+        item.titleKey === 'withdrawals' && pendingWithdrawals?.total
+          ? { ...item, badgeCount: pendingWithdrawals.total }
+          : item,
+      ),
+    [pendingWithdrawals?.total],
+  );
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -156,7 +145,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href={ROUTES.DASHBOARD}>
+              <Link href={ROUTES.PLATFORM_DASHBOARD}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Shield className="size-4" />
                 </div>
@@ -174,7 +163,7 @@ export function AppSidebar() {
       <SidebarContent>
         <NavSection
           labelKey="platform"
-          items={platformNavItems}
+          items={platformItems}
           pathname={pathname}
           can={can}
           tNav={tNav}

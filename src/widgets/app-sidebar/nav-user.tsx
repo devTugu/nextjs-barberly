@@ -1,9 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronsUpDown, LogOut } from 'lucide-react';
 import { useAuthStore, useLogout } from '@/features/auth';
-import { ROUTES } from '@/shared/config/routes';
+import { resolveAdminLoginPath } from '@/shared/lib/admin-auth-routes';
 import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import {
@@ -28,6 +28,7 @@ export function NavUser() {
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
   const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations('auth');
 
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? 'AD';
@@ -35,7 +36,7 @@ export function NavUser() {
   const handleLogout = async () => {
     try {
       await logout.mutateAsync();
-      router.push(ROUTES.LOGIN);
+      router.push(resolveAdminLoginPath(pathname));
       toast.success(t('signedOut'));
     } catch (error) {
       toast.error(getErrorMessage(error));

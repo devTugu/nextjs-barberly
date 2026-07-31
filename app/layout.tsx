@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: env.APP_NAME,
     description: `${env.APP_NAME} — enterprise RBAC admin dashboard`,
     metadataBase: env.SITE_URL ? new URL(env.SITE_URL) : undefined,
+    manifest: '/manifest.webmanifest',
   };
 }
 

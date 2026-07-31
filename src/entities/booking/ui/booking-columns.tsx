@@ -1,9 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useLocale, useTranslations } from 'next-intl';
 import { Badge } from '@/shared/ui/badge';
+import { ROUTES } from '@/shared/config/routes';
 import { getDateLocale } from '@/shared/i18n/messages';
 import type { Locale } from '@/shared/i18n/config';
 import type { BookingOutput } from '../types/booking';
@@ -25,7 +27,18 @@ export function useBookingColumns() {
 
   return useMemo<ColumnDef<BookingOutput, unknown>[]>(
     () => [
-      { accessorKey: 'id', header: '#' },
+      {
+        accessorKey: 'id',
+        header: '#',
+        cell: ({ row }) => (
+          <Link
+            href={ROUTES.adminBooking(row.original.id)}
+            className="font-medium hover:underline"
+          >
+            #{row.original.id}
+          </Link>
+        ),
+      },
       {
         accessorKey: 'startAtUtc',
         header: t('time'),

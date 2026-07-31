@@ -10,12 +10,18 @@ describe('bff-allowlist', () => {
     expect(isBffPathAllowed('/users', 'GET')).toBe(true);
     expect(isBffPathAllowed('/admin/audit-logs', 'GET')).toBe(true);
     expect(isBffPathAllowed('/admin/dashboard/stats', 'GET')).toBe(true);
+    expect(isBffPathAllowed('/admin/brand/dashboard', 'GET')).toBe(true);
+    expect(isBffPathAllowed('/admin/brand/catalog-sync', 'GET')).toBe(true);
+    expect(isBffPathAllowed('/admin/brand/catalog-sync', 'POST')).toBe(true);
+    expect(isBffPathAllowed('/admin/dashboard/platform-finance/trend', 'GET')).toBe(true);
+    expect(isBffPathAllowed('/admin/dashboard/platform-finance/export', 'GET')).toBe(true);
     expect(isBffPathAllowed('/admin/dashboard/platform-finance', 'GET')).toBe(true);
   });
 
   it('allows dynamic id segments', () => {
     expect(isBffPathAllowed('/users/42', 'PATCH')).toBe(true);
     expect(isBffPathAllowed('/roles/assign/1/2', 'DELETE')).toBe(true);
+    expect(isBffPathAllowed('/admin/staff/3/link-branch', 'POST')).toBe(true);
   });
 
   it('rejects unknown paths', () => {

@@ -1,6 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('i18n', () => {
+  test('shows Mongolian sign-in strings by default without locale cookie', async ({
+    page,
+    context,
+  }) => {
+    await context.clearCookies();
+
+    await page.goto('/login');
+    await expect(page.getByRole('heading', { name: 'Нэвтрэх' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Нэвтрэх', exact: true }),
+    ).toBeVisible();
+  });
+
   test('shows Mongolian sign-in strings when locale cookie is mn', async ({
     page,
     context,
@@ -14,7 +27,7 @@ test.describe('i18n', () => {
       },
     ]);
 
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await expect(page.getByRole('heading', { name: 'Нэвтрэх' })).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Нэвтрэх', exact: true }),
@@ -34,7 +47,7 @@ test.describe('i18n', () => {
       },
     ]);
 
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Sign in', exact: true }),

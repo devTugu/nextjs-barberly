@@ -4,12 +4,12 @@ Frontend security model: BFF proxy, httpOnly cookies, CSRF protection.
 
 ## Authentication flow
 
-1. User submits credentials on `/sign-in`
+1. User submits credentials on `/login`
 2. `POST /api/auth/login` proxies to Nest `POST /auth/login`
 3. On success, BFF sets httpOnly cookies (access + refresh + session hint)
 4. Browser calls admin API via `/api/backend/*` — BFF attaches JWT from cookie
 5. `POST /api/auth/refresh` rotates tokens before expiry
-6. MFA challenge handled inline on sign-in page
+6. MFA challenge handled inline on the login page
 
 Tokens are **never** stored in `localStorage`.
 
@@ -32,8 +32,8 @@ Implemented in `src/shared/lib/csrf-client.ts` and BFF route handlers.
 
 `src/processes/proxy.ts` guards `/dashboard/*`:
 
-- Redirects unauthenticated users to `/sign-in`
-- Redirects authenticated users away from `/sign-in` to `/dashboard`
+- Redirects unauthenticated users to `/login`
+- Redirects authenticated users away from `/login` to `/dashboard`
 
 Session check: `SESSION` cookie hint + `REFRESH_TOKEN` cookie present.
 

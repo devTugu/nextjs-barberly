@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/api';
 import { listQueryOptions } from '@/shared/api/list-query-options';
 import { API_ENDPOINTS } from '@/shared/config/api.config';
-import { shopQueryParams } from '@/shared/hooks/use-shop-tenant';
+import { tenantQueryParams } from '@/shared/hooks/use-tenant-subdomain';
 import type { BookingListParams, BookingListResult } from '../types/booking';
 
 export const bookingKeys = {
@@ -20,7 +20,7 @@ export const useBookings = (tenant: string, params: BookingListParams) => {
     queryFn: async () => {
       const result = await api.get<BookingListResult>(
         API_ENDPOINTS.BOOKINGS.LIST,
-        { params: { ...shopQueryParams(tenant), ...params } },
+        { params: { ...tenantQueryParams(tenant), ...params } },
       );
       return {
         ...result,

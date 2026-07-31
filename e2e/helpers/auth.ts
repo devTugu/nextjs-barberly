@@ -12,7 +12,7 @@ async function fetchCsrf(page: Page): Promise<string> {
 }
 
 export async function loginAsAdmin(page: Page): Promise<void> {
-  await page.goto('/sign-in');
+  await page.goto('/login');
   await page.getByLabel('Email').fill(adminEmail);
   await page.getByLabel('Password').fill(adminPassword);
   await page.getByRole('button', { name: 'Sign in' }).click();
@@ -20,7 +20,7 @@ export async function loginAsAdmin(page: Page): Promise<void> {
 }
 
 export async function loginAsViewer(page: Page): Promise<void> {
-  await page.goto('/sign-in');
+  await page.goto('/login');
   await page.getByLabel('Email').fill(viewerEmail);
   await page.getByLabel('Password').fill(viewerPassword);
   await page.getByRole('button', { name: 'Sign in' }).click();

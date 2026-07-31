@@ -8,7 +8,7 @@ test.describe('Roles', () => {
 
   test('opens roles list with permission picker support', async ({ page }) => {
     await page.getByRole('link', { name: 'Roles' }).click();
-    await expect(page).toHaveURL(/\/dashboard\/roles/);
+    await expect(page).toHaveURL(/\/roles/);
     await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible({
       timeout: 15_000,
     });

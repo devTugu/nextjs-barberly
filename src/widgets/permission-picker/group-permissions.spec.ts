@@ -16,19 +16,19 @@ describe('groupPermissions', () => {
       [
         permission('USER_READ'),
         permission('USER_CREATE'),
-        permission('BRAND_READ'),
+        permission('ROLE_READ'),
       ],
       mockTranslator,
     );
 
-    expect(groups.map((group) => group.key)).toEqual(['users', 'brands']);
+    expect(groups.map((group) => group.key)).toEqual(['users', 'roles']);
     expect(groups[0]?.items).toHaveLength(2);
-    expect(groups[1]?.items[0]?.code).toBe('BRAND_READ');
+    expect(groups[1]?.items[0]?.code).toBe('ROLE_READ');
   });
 
   it('omits empty groups', () => {
-    const groups = groupPermissions([permission('HISTORY_READ')], mockTranslator);
+    const groups = groupPermissions([permission('USER_READ')], mockTranslator);
     expect(groups).toHaveLength(1);
-    expect(groups[0]?.key).toBe('history');
+    expect(groups[0]?.key).toBe('users');
   });
 });

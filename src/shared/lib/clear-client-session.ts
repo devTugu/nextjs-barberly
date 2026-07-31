@@ -1,6 +1,7 @@
 'use client';
 
 import { ROUTES } from '@/shared/config/routes';
+import { resolveAdminLoginPath } from '@/shared/lib/admin-auth-routes';
 import { mutatingFetchHeaders } from '@/shared/lib/csrf-client';
 import { sessionHint } from '@/shared/lib/session-hint';
 
@@ -23,8 +24,11 @@ export function redirectToLogin(): void {
   if (typeof window === 'undefined') return;
 
   void clearClientSession().finally(() => {
-    if (!window.location.pathname.startsWith(ROUTES.LOGIN)) {
-      window.location.href = ROUTES.LOGIN;
+    if (
+      !window.location.pathname.startsWith(ROUTES.PLATFORM_LOGIN) &&
+      !window.location.pathname.startsWith(ROUTES.ADMIN_LOGIN)
+    ) {
+      window.location.href = resolveAdminLoginPath(window.location.pathname);
     }
   });
 }

@@ -40,8 +40,27 @@ npm run dev
 ```
 
 - Marketing site: `http://localhost:3000`
-- Admin: `http://localhost:3000/sign-in`
+- Platform admin: `http://localhost:3000/login`
 - Credentials: `admin@example.com` / `Admin123!`
+
+## Customer brand SSO cookies (ADR-019)
+
+| Env | Default cookie `Domain` |
+|-----|-------------------------|
+| production | `.barberly.mn` (`NEXT_PUBLIC_ROOT_DOMAIN`) |
+| development | **host-only** (no Domain) — reliable on `*.localhost` |
+
+Dev shared-domain SSO (optional):
+
+```env
+CUSTOMER_COOKIE_DOMAIN=.barberly.test
+```
+
+Force host-only everywhere: `CUSTOMER_COOKIE_HOST_ONLY=1`.
+
+Do **not** use `CUSTOMER_COOKIE_DOMAIN=.localhost` — browsers often reject it, which breaks profile save (`No customer session` after OTP).
+
+Smoke: `e2e/customer-cookie-domain-smoke.spec.ts`
 
 ## Verify
 

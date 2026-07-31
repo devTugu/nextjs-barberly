@@ -20,6 +20,16 @@ function collectKeyPaths(
   });
 }
 
+function diffCatalogKeys(left: string[], right: string[]) {
+  const rightSet = new Set(right);
+  const leftSet = new Set(left);
+
+  return {
+    onlyInLeft: left.filter((key) => !rightSet.has(key)).sort(),
+    onlyInRight: right.filter((key) => !leftSet.has(key)).sort(),
+  };
+}
+
 describe('getStepHeadings', () => {
   it('returns localized MFA enrollment heading in Mongolian', () => {
     const headings = getStepHeadings('mn');
@@ -31,12 +41,34 @@ describe('getPageTitle', () => {
   it('returns Mongolian nav title for dashboard route', () => {
     expect(getPageTitle('/dashboard', 'mn')).toBe('Тойм');
   });
+
+  it('uses Mongolian as the default locale', async () => {
+    const { defaultLocale } = await import('./config');
+    expect(defaultLocale).toBe('mn');
+  });
 });
 
 describe('message catalogs', () => {
   it('keeps en and mn key structures in sync', () => {
     const enKeys = collectKeyPaths(en).sort();
     const mnKeys = collectKeyPaths(mn).sort();
-    expect(mnKeys).toEqual(enKeys);
+    const { onlyInLeft: onlyInEn, onlyInRight: onlyInMn } = diffCatalogKeys(
+      enKeys,
+      mnKeys,
+    );
+
+    expect(
+      { missingFromMn: onlyInEn, missingFromEn: onlyInMn },
+      [
+        onlyInEn.length
+          ? `Keys present in en.json but missing from mn.json:\n${onlyInEn.join('\n')}`
+          : null,
+        onlyInMn.length
+          ? `Keys present in mn.json but missing from en.json:\n${onlyInMn.join('\n')}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n'),
+    ).toEqual({ missingFromMn: [], missingFromEn: [] });
   });
 });

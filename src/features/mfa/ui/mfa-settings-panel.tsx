@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
 import { useAuthStore } from '@/features/auth/model/store';
 import { MfaSetupPanel } from '@/features/mfa/ui/mfa-setup-panel';
 import { TotpCodeInput } from '@/features/mfa/ui/totp-code-input';
 import { bffMe } from '@/shared/lib/bff-auth';
 import type { UserOutput } from '@/entities/user';
-import { getErrorMessage } from '@/shared/api';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
@@ -46,7 +46,7 @@ export function MfaSettingsPanel() {
       setOtpauthUrl(result.otpauthUrl);
       setCode('');
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(resolveMfaErrorMessage(error, t));
     }
   };
 
@@ -58,7 +58,7 @@ export function MfaSettingsPanel() {
       await refreshUser();
       toast.success(t('mfaEnabledToast'));
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(resolveMfaErrorMessage(error, t));
     }
   };
 
@@ -69,7 +69,7 @@ export function MfaSettingsPanel() {
       await refreshUser();
       toast.success(t('mfaDisabledToast'));
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(resolveMfaErrorMessage(error, t));
     }
   };
 

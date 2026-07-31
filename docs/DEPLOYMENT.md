@@ -38,6 +38,17 @@ GitHub Actions runs:
 - Lint, typecheck, unit tests
 - E2E via `scripts/ci-e2e.sh` (requires paired backend)
 
+### E2E environment variables
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `E2E_ADMIN_EMAIL` | Yes | Platform admin login (default `admin@example.com` in local specs) |
+| `E2E_ADMIN_PASSWORD` | Yes | Platform admin password |
+| `API_INTERNAL_URL` | Yes | NestJS API base URL for BFF during Playwright runs |
+| `PLAYWRIGHT_BASE_URL` | No | Frontend URL under test (CI sets from preview/deploy URL) |
+
+Pair with backend seed (`RUN_SEED=true` once) so demo tenant and admin user exist before e2e.
+
 ## Smoke test
 
 After deploy:
@@ -50,7 +61,22 @@ bash scripts/smoke-railway.sh https://your-frontend.example.com
 
 Frontend exposes `GET /api/health` for load balancer probes.
 
+## Production checklist (Barberly)
+
+| Item | Setting |
+|------|---------|
+| QPay provider | Backend `QPAY_PROVIDER=qpay` with valid merchant credentials |
+| QPay callback | Public HTTPS webhook URL registered with QPay |
+| Dev simulate | `NEXT_PUBLIC_QPAY_SIMULATE_ENABLED=false` in production |
+| Web push | Backend `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` + admin push subscription route |
+| Brand color | Run migration `1730000000024` (`tenant_settings.brand_color`) |
+| Permissions | Re-seed if new permissions added (`RUN_SEED=true` once, then `false`) |
+| PWA | Serwist enabled in production build; service worker at `/sw.js` |
+| patch-package | `postinstall` runs `patch-package` (next-themes React 19 fix) |
+| Tenant hosts | Wildcard DNS `*.barberly.mn` + platform host for admin console |
+
 ## Related
 
-- Backend [Deployment](https://github.com/devTugu/nestjs-fsd-portfolio-template/blob/main/docs/DEPLOYMENT.md)
+- Backend [Deployment](../../nestjs-barberly/docs/DEPLOYMENT.md)
 - [Fork Guide](FORK-GUIDE.md)
+- [ROUTING.md](ROUTING.md)

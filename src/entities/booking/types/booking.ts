@@ -11,6 +11,18 @@ export const BOOKING_STATUSES = [
 
 export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
+export const PAYMENT_SETTLEMENT_STATUSES = [
+  'awaiting_deposit',
+  'deposit_paid',
+  'fully_settled',
+  'forfeited',
+] as const;
+
+export type PaymentSettlementStatus =
+  (typeof PAYMENT_SETTLEMENT_STATUSES)[number];
+
+export type BookingPaymentKind = 'deposit' | 'balance';
+
 export interface BookingServiceLine {
   serviceId: number;
   serviceName: string;
@@ -22,11 +34,20 @@ export interface BookingOutput {
   id: number;
   tenantId: number;
   customerId: number | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
   staffId: number;
   startAtUtc: string;
   endAtUtc: string;
   status: BookingStatus;
   totalPrice: number;
+  depositAmount: number;
+  balanceDue: number;
+  depositPaidAmount: number;
+  balancePaidOnlineAmount: number;
+  balanceRecordedOfflineAmount: number;
+  paymentSettlementStatus: PaymentSettlementStatus;
+  remainingBalance: number;
   lockExpiresAt: string | null;
   services: BookingServiceLine[];
   createdAt: string;
@@ -54,4 +75,6 @@ export interface BookingListParams {
   limit?: number;
   status?: string;
   staffId?: number;
+  fromUtc?: string;
+  toUtc?: string;
 }

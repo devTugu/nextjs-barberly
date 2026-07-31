@@ -8,6 +8,7 @@ import {
   fetchAuthMe,
   refreshTokenPair,
 } from '@/shared/lib/bff-auth-server';
+import { resolveTenantSubdomain } from '@/shared/lib/host-context';
 
 function unauthorizedResponse(): NextResponse {
   const response = NextResponse.json(
@@ -20,8 +21,11 @@ function unauthorizedResponse(): NextResponse {
   return clearAuthCookies(response);
 }
 
-async function proxyAuthMe(accessToken: string): Promise<NextResponse> {
-  const upstream = await fetchAuthMe(accessToken);
+async function proxyAuthMe(
+  accessToken: string,
+  tenantSubdomain: string,
+): Promise<NextResponse> {
+  const upstream = await fetchAuthMe(accessToken, tenantSubdomain);
   const body = await upstream.text();
 
   return new NextResponse(body, {
@@ -36,9 +40,10 @@ async function proxyAuthMe(accessToken: string): Promise<NextResponse> {
 async function meWithRefreshRetry(
   accessToken: string | undefined,
   refreshToken: string | undefined,
+  tenantSubdomain: string,
 ): Promise<NextResponse> {
   if (accessToken) {
-    const response = await proxyAuthMe(accessToken);
+    const response = await proxyAuthMe(accessToken, tenantSubdomain);
     if (response.status !== 401) {
       return response;
     }
@@ -53,7 +58,7 @@ async function meWithRefreshRetry(
     return unauthorizedResponse();
   }
 
-  const response = await proxyAuthMe(pair.accessToken);
+  const response = await proxyAuthMe(pair.accessToken, tenantSubdomain);
   if (response.status === 401) {
     return clearAuthCookies(response);
   }
@@ -66,6 +71,10 @@ export async function GET(request: NextRequest) {
   const refreshToken = request.cookies.get(
     AUTH_COOKIE_NAMES.REFRESH_TOKEN,
   )?.value;
+  const tenantSubdomain = resolveTenantSubdomain(
+    request.headers.get('host') ?? 'localhost',
+    request.nextUrl.searchParams.get('tenant'),
+  );
 
-  return meWithRefreshRetry(accessToken, refreshToken);
+  return meWithRefreshRetry(accessToken, refreshToken, tenantSubdomain);
 }

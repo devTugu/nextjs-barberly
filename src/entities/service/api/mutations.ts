@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/shared/api';
 import { API_ENDPOINTS } from '@/shared/config/api.config';
-import { shopQueryParams } from '@/shared/hooks/use-shop-tenant';
+import { tenantQueryParams } from '@/shared/hooks/use-tenant-subdomain';
 import type {
   CreateServiceInput,
   ServiceOutput,
@@ -16,7 +16,7 @@ export const useCreateService = (tenant: string) => {
   return useMutation({
     mutationFn: (data: CreateServiceInput) =>
       api.post<ServiceOutput>(API_ENDPOINTS.SERVICES.LIST, data, {
-        params: shopQueryParams(tenant),
+        params: tenantQueryParams(tenant),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.list(tenant) });
@@ -29,7 +29,7 @@ export const useUpdateService = (tenant: string) => {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateServiceInput }) =>
       api.patch<ServiceOutput>(API_ENDPOINTS.SERVICES.BY_ID(id), data, {
-        params: shopQueryParams(tenant),
+        params: tenantQueryParams(tenant),
       }),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.list(tenant) });
@@ -45,7 +45,7 @@ export const useDeleteService = (tenant: string) => {
   return useMutation({
     mutationFn: (id: number) =>
       api.delete<void>(API_ENDPOINTS.SERVICES.BY_ID(id), {
-        params: shopQueryParams(tenant),
+        params: tenantQueryParams(tenant),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.list(tenant) });

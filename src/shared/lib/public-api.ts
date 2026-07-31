@@ -1,16 +1,21 @@
 import type { ApiEnvelope, ApiErrorEnvelope } from '@/shared/api/types';
 import { mutatingFetchHeaders } from '@/shared/lib/csrf-client';
+import { PublicApiError } from '@/shared/lib/public-api-error';
 
 async function parseJson<T>(response: Response): Promise<T> {
   const body = (await response.json()) as ApiEnvelope<T> | ApiErrorEnvelope;
   if (!response.ok || !body.success) {
+    const code =
+      !body.success && body.error && typeof body.error.code === 'string'
+        ? body.error.code
+        : 'UNKNOWN';
     const message =
       !body.success && body.error
         ? typeof body.error.message === 'string'
           ? body.error.message
           : 'Request failed'
         : `Request failed (${response.status})`;
-    throw new Error(message);
+    throw new PublicApiError(message, code);
   }
   return body.data;
 }

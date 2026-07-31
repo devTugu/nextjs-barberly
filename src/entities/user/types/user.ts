@@ -7,6 +7,7 @@ export interface UserOutput {
   updatedAt: string;
   roles: string[];
   permissionCodes: string[];
+  staffMemberId?: number | null;
 }
 
 export interface CreateUserInput {

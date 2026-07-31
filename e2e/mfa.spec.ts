@@ -6,7 +6,7 @@ test.describe('MFA login', () => {
   test('requires TOTP after MFA enrollment', async ({ page }) => {
     const secret = await enrollAdminMfa(page);
 
-    await page.goto('/sign-in');
+    await page.goto('/login');
     await page.getByLabel('Email').fill(adminEmail);
     await page.getByLabel('Password').fill(adminPassword);
     await page.getByRole('button', { name: 'Sign in' }).click();

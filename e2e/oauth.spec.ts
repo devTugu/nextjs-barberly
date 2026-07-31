@@ -6,8 +6,8 @@ test.describe('OAuth SSO', () => {
     'OAuth E2E requires Keycloak (NEXT_PUBLIC_OAUTH_ENABLED=true)',
   );
 
-  test('shows SSO button on sign-in page', async ({ page }) => {
-    await page.goto('/sign-in');
+  test('shows SSO button on login page', async ({ page }) => {
+    await page.goto('/login');
     await expect(page.getByRole('button', { name: 'Continue with SSO' })).toBeVisible();
   });
 });

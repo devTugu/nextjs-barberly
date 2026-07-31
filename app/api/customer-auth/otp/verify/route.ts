@@ -6,7 +6,13 @@ import { setCustomerAuthCookies } from '@/shared/lib/customer-auth-cookies';
 type VerifyResult = {
   accessToken: string;
   expiresIn: number;
-  customer: { id: number; tenantId: number; phone: string };
+  customer: {
+    id: number;
+    tenantId: number;
+    phone: string;
+    name: string | null;
+    needsProfile?: boolean;
+  };
 };
 
 export async function POST(request: NextRequest) {

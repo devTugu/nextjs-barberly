@@ -1,6 +1,6 @@
 # Barberly Web (Next.js + FSD)
 
-Multi-tenant barbershop booking web app — marketing landing, customer booking wizard (`/book`), tenant admin (`/shop`), and platform dashboard (`/dashboard`).
+Multi-tenant barbershop booking web app — marketing landing, customer booking wizard (`/book`), tenant admin (`/admin`), and platform dashboard (`/dashboard`).
 
 **Product specification:** [../nestjs-barberly/docs/PRODUCT.md](../nestjs-barberly/docs/PRODUCT.md)
 
@@ -30,7 +30,7 @@ npm run dev
 |-------|---------|
 | `/` | Marketing / tenant landing |
 | `/dashboard` | Platform super-admin |
-| `/shop/*` | Tenant admin (Phase 1) |
+| `/admin/*` | Tenant admin |
 | `/book` | Customer booking wizard (Phase 1) |
 
 Dev tenant resolution: `?tenant=demo` or `X-Tenant-Subdomain` via BFF proxy.
@@ -41,6 +41,6 @@ Dev tenant resolution: `?tenant=demo` or `X-Tenant-Subdomain` via BFF proxy.
 
 - CMS template removed; system admin shell retained
 - Sprint 0+ backend: see nestjs-barberly README
-- Frontend `/shop` and `/book` — upcoming sprints
+- Frontend `/admin` and `/book` — upcoming sprints
 
 See [PRODUCT.md](../nestjs-barberly/docs/PRODUCT.md) for full booking specification.

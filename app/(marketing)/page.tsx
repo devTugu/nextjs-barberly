@@ -1,38 +1,57 @@
-import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
-import { env } from '@/shared/config/env';
-import { ROUTES } from '@/shared/config/routes';
-import { hasServerSession } from '@/shared/lib/server-session';
-import { Button } from '@/shared/ui/button';
+import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { resolveHostContext } from '@/shared/lib/host-context';
+import {
+  buildMarketingMetadata,
+  loadPlatformLanding,
+  loadTenantMarketingContext,
+  resolvePlatformLoginUrl,
+  tenantExists,
+} from '@/shared/lib/marketing-page-data';
+import { DEFAULT_TENANT_LANDING } from '@/entities/tenant/types/landing-content';
+import { PlatformLandingPage } from '@/widgets/platform-landing/platform-landing-page';
+import { LuxuryTenantLanding } from '@/widgets/tenant-landing/luxury-tenant-landing';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get('host') ?? 'localhost:3000';
+  return buildMarketingMetadata(host);
+}
 
 export default async function HomePage() {
-  const t = await getTranslations('home');
-  const hasSession = await hasServerSession();
+  const host = (await headers()).get('host') ?? 'localhost:3000';
+  const ctx = resolveHostContext(host);
+  const subdomain = ctx.subdomain;
+
+  const showPlatform =
+    ctx.scope === 'platform' ||
+    !subdomain ||
+    !(await tenantExists(subdomain));
+
+  if (showPlatform) {
+    const content = await loadPlatformLanding();
+    return (
+      <PlatformLandingPage
+        content={content}
+        platformLoginUrl={resolvePlatformLoginUrl(host)}
+      />
+    );
+  }
+
+  const data = await loadTenantMarketingContext(subdomain);
+  const landingContent = {
+    ...DEFAULT_TENANT_LANDING,
+    ...(data.settings?.landingContent ?? {}),
+  };
 
   return (
-    <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-4 py-24 text-center">
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-        Barberly
-      </p>
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-        {env.BRAND_NAME}
-      </h1>
-      <p className="text-lg text-muted-foreground">{t('subtitle')}</p>
-      <div className="flex flex-wrap justify-center gap-3">
-        <Button asChild size="lg">
-          <Link href={hasSession ? ROUTES.DASHBOARD : ROUTES.LOGIN}>
-            {hasSession ? t('dashboard') : t('signIn')}
-          </Link>
-        </Button>
-        <Button asChild size="lg" variant="outline">
-          <Link href={`${ROUTES.BOOK}?tenant=demo`}>Book appointment</Link>
-        </Button>
-        {hasSession && (
-          <Button asChild size="lg" variant="secondary">
-            <Link href={`${ROUTES.SHOP}?tenant=demo`}>Shop admin</Link>
-          </Button>
-        )}
-      </div>
-    </section>
+    <LuxuryTenantLanding
+      tenantName={data.name}
+      settings={data.settings}
+      landingContent={landingContent}
+      services={data.services}
+      openingHoursSummary={data.openingHoursSummary}
+      scheduleDays={data.scheduleDays}
+      upcomingHolidays={data.upcomingHolidays}
+    />
   );
 }

@@ -4,10 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MotionConfig } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 import { useState, type ReactNode } from 'react';
+import { useServiceWorkerDevCleanup } from '@/shared/hooks/use-service-worker-dev-cleanup';
 import { Toaster } from '@/shared/ui/sonner';
 import { TooltipProvider } from '@/shared/ui/tooltip';
 
 export function Providers({ children }: { children: ReactNode }) {
+  useServiceWorkerDevCleanup();
+
   const [queryClient] = useState(
     () =>
       new QueryClient({

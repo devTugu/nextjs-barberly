@@ -75,13 +75,15 @@ jobs:
       E2E_VIEWER_EMAIL: viewer@example.com
       E2E_VIEWER_PASSWORD: Viewer123!
       MFA_REQUIRED_ROLES: ''
+      NEXT_PUBLIC_OTP_DEV_BYPASS_CODE: '000000'
+      NEXT_PUBLIC_QPAY_SIMULATE_ENABLED: 'true'
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/checkout@v4
         with:
-          repository: devTugu/nestjs-fsd-portfolio-template
+          repository: devTugu/nestjs-barberly
           path: api
           ref: main
 
@@ -124,6 +126,8 @@ jobs:
           SEED_VIEWER_PASSWORD=Viewer123!
           MFA_REQUIRED_ROLES=
           MFA_ENCRYPTION_KEY=ci_mfa_encryption_key_minimum_32_chars
+          OTP_DEV_BYPASS_CODE=000000
+          QPAY_PROVIDER=noop
           EOF
 
       - name: Build API

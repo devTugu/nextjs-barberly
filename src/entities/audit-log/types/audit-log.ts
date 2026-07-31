@@ -13,6 +13,7 @@ export interface ListAuditLogsParams {
   page?: number;
   limit?: number;
   userId?: number;
+  tenantId?: number;
   resource?: string;
   action?: string;
   from?: string;

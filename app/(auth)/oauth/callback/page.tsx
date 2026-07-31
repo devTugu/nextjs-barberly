@@ -12,6 +12,7 @@ import {
 } from '@/features/auth';
 import { MfaEnrollmentStep } from '@/features/auth/ui/mfa-enrollment-step';
 import { MfaVerifyForm } from '@/features/mfa/ui/mfa-verify-form';
+import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
 import { bffMe, bffOAuthCallback } from '@/shared/lib/bff-auth';
 import { OAUTH_STATE_KEY } from '@/widgets/oauth-sign-in-button/oauth-sign-in-button';
 import { ROUTES } from '@/shared/config/routes';
@@ -30,6 +31,7 @@ export default function OAuthCallbackPage() {
   const confirmEnrollment = useConfirmMfaEnrollment();
   const locale = useLocale() as Locale;
   const t = useTranslations('auth');
+  const tMfa = useTranslations('mfa');
   const [mfaToken, setMfaToken] = useState<string | null>(null);
   const [enrollmentToken, setEnrollmentToken] = useState<string | null>(null);
   const [code, setCode] = useState('');
@@ -55,7 +57,7 @@ export default function OAuthCallbackPage() {
         const user = await bffMe<UserOutput>();
         setSession(user);
         sessionStorage.removeItem(OAUTH_STATE_KEY);
-        router.replace(ROUTES.DASHBOARD);
+        router.replace(ROUTES.PLATFORM_DASHBOARD);
       } catch (err) {
         setError(getErrorMessage(err));
       }
@@ -67,9 +69,9 @@ export default function OAuthCallbackPage() {
     try {
       await verifyMfa.mutateAsync({ mfaToken, code });
       sessionStorage.removeItem(OAUTH_STATE_KEY);
-      router.replace(ROUTES.DASHBOARD);
+      router.replace(ROUTES.PLATFORM_DASHBOARD);
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error(resolveMfaErrorMessage(err, tMfa));
     }
   };
 
@@ -77,7 +79,7 @@ export default function OAuthCallbackPage() {
     if (!enrollmentToken) return;
     await confirmEnrollment.mutateAsync({ enrollmentToken, code: totpCode });
     sessionStorage.removeItem(OAUTH_STATE_KEY);
-    router.replace(ROUTES.DASHBOARD);
+    router.replace(ROUTES.PLATFORM_DASHBOARD);
   };
 
   if (error) {
@@ -101,7 +103,7 @@ export default function OAuthCallbackPage() {
         </div>
         <MfaEnrollmentStep
           enrollmentToken={enrollmentToken}
-          onBack={() => router.replace(ROUTES.LOGIN)}
+          onBack={() => router.replace(ROUTES.PLATFORM_LOGIN)}
           onConfirm={onConfirmEnrollment}
           isConfirming={confirmEnrollment.isPending}
         />
@@ -128,7 +130,7 @@ export default function OAuthCallbackPage() {
           onCodeChange={setCode}
           onVerify={onVerify}
           isVerifying={verifyMfa.isPending}
-          onBack={() => router.replace(ROUTES.LOGIN)}
+          onBack={() => router.replace(ROUTES.PLATFORM_LOGIN)}
         />
       </div>
     );

@@ -20,7 +20,7 @@ const AdminContentLocaleContext =
 
 interface AdminContentLocaleProviderProps {
   children: ReactNode;
-  /** Reset to `en` when the parent form/sheet opens or record changes. */
+  /** Reset to `mn` when the parent form/sheet opens or record changes. */
   resetKey?: string | number | boolean;
 }
 
@@ -29,7 +29,7 @@ function AdminContentLocaleState({
 }: {
   children: ReactNode;
 }) {
-  const [locale, setLocaleState] = useState<SupportedLocale>('en');
+  const [locale, setLocaleState] = useState<SupportedLocale>('mn');
 
   const setLocale = useCallback((next: SupportedLocale) => {
     setLocaleState(next);
@@ -62,7 +62,7 @@ export function useAdminContentLocale(): AdminContentLocaleContextValue {
   const context = useContext(AdminContentLocaleContext);
   if (!context) {
     return {
-      locale: 'en',
+      locale: 'mn',
       setLocale: () => {},
     };
   }

@@ -49,11 +49,26 @@ sequenceDiagram
 | Area | Location |
 |------|----------|
 | Marketing pages | `app/(marketing)/` |
-| Admin dashboard | `app/dashboard/` |
+| Barber admin | `app/admin/` |
+| Platform admin | `app/(platform)/` |
+| Customer portal | `app/user/`, `app/book/` |
 | Auth routes | `app/api/auth/` |
-| Public API client | `src/entities/public-api/public-server.ts` |
+| Public API client | `src/entities/public-api/` |
 | Proxy redirects | `src/processes/proxy.ts` |
 | Route constants | `src/shared/config/routes.ts` |
+
+## PWA (Serwist)
+
+Dual installable manifests:
+
+| Manifest | Scope | Start URL |
+|----------|-------|-----------|
+| `/manifest.webmanifest` | `/` | `/` |
+| `/admin/manifest.webmanifest` | `/admin` | `/admin/dashboard` |
+
+- Service worker: `app/sw.ts` → build output `public/sw.js` via `@serwist/next`
+- Admin push: `AdminPwaBootstrap` subscribes via VAPID + `POST /admin/push-subscriptions`
+- NestJS sends web push on booking payment webhook (`NotifyTenantNewBookingUseCase`)
 
 ## Related
 

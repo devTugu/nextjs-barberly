@@ -31,7 +31,7 @@ await context.addCookies([
 ]);
 const page = await context.newPage();
 
-await page.goto(`${siteUrl}/sign-in`, { waitUntil: 'networkidle' });
+await page.goto(`${siteUrl}/login`, { waitUntil: 'networkidle' });
 await page.getByLabel('Email').fill(email);
 await page.getByLabel('Password').fill(password);
 await page.getByRole('button', { name: /sign in/i }).click();

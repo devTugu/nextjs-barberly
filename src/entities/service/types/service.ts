@@ -7,6 +7,7 @@ export interface ServiceOutput {
   price: number;
   isActive: boolean;
   sortOrder: number;
+  templateKey?: string | null;
   createdAt: string;
   updatedAt: string;
 }

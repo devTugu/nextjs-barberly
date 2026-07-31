@@ -9,6 +9,7 @@ import type {
 } from '@/shared/api/types';
 import { refreshClientSession } from '@/shared/lib/bff-refresh';
 import { mutatingFetchHeaders } from '@/shared/lib/csrf-client';
+import { resolveTenantSubdomain } from '@/shared/lib/host-context';
 
 async function parseJson<T>(response: Response): Promise<ApiEnvelope<T>> {
   return response.json() as Promise<ApiEnvelope<T>>;
@@ -153,7 +154,14 @@ export async function bffLogout(): Promise<void> {
 }
 
 async function fetchBffMe<T>(): Promise<{ response: Response; envelope: ApiEnvelope<T> }> {
-  const response = await fetch('/api/auth/me', {
+  const tenant =
+    typeof window !== 'undefined'
+      ? resolveTenantSubdomain(
+          window.location.hostname,
+          new URLSearchParams(window.location.search).get('tenant'),
+        )
+      : 'demo';
+  const response = await fetch(`/api/auth/me?tenant=${encodeURIComponent(tenant)}`, {
     method: 'GET',
     credentials: 'include',
   });

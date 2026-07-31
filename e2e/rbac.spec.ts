@@ -3,8 +3,8 @@ import { loginAsAdmin } from './helpers/auth';
 
 test.describe('RBAC', () => {
   test('dashboard is protected before login', async ({ page }) => {
-    await page.goto('/dashboard/users');
-    await expect(page).toHaveURL(/\/sign-in/);
+    await page.goto('/users');
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('admin can access users after login', async ({ page }) => {

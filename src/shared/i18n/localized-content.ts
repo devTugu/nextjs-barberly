@@ -1,4 +1,4 @@
-export const SUPPORTED_LOCALES = ['en', 'mn'] as const;
+export const SUPPORTED_LOCALES = ['mn', 'en'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 export type LocalizedText = Record<SupportedLocale, string>;

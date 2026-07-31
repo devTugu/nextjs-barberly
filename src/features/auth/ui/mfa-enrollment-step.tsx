@@ -1,10 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { MfaSetupPanel } from '@/features/mfa/ui/mfa-setup-panel';
+import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
 import { bffEnrollmentEnroll } from '@/shared/lib/bff-auth';
-import { getErrorMessage } from '@/shared/api';
 
 interface MfaEnrollmentStepProps {
   enrollmentToken: string;
@@ -19,28 +20,34 @@ export function MfaEnrollmentStep({
   onConfirm,
   isConfirming,
 }: MfaEnrollmentStepProps) {
+  const t = useTranslations('mfa');
   const [otpauthUrl, setOtpauthUrl] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [isLoadingSetup, setIsLoadingSetup] = useState(true);
+  const enrolledForToken = useRef<string | null>(null);
 
   useEffect(() => {
+    if (enrolledForToken.current === enrollmentToken) return;
+    enrolledForToken.current = enrollmentToken;
+
     void (async () => {
       try {
         const result = await bffEnrollmentEnroll(enrollmentToken);
         setOtpauthUrl(result.otpauthUrl);
       } catch (error) {
-        toast.error(getErrorMessage(error));
+        enrolledForToken.current = null;
+        toast.error(resolveMfaErrorMessage(error, t));
       } finally {
         setIsLoadingSetup(false);
       }
     })();
-  }, [enrollmentToken]);
+  }, [enrollmentToken, t]);
 
   const handleConfirm = async () => {
     try {
       await onConfirm(code);
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(resolveMfaErrorMessage(error, t));
     }
   };
 
