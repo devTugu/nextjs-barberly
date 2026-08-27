@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import type { PlatformLandingContent, PublicShopCard } from '@/entities/tenant';
+import { CsrfBootstrap } from '@/shared/ui/csrf-bootstrap';
 import { PlatformContact } from './platform-contact';
 import { PlatformLandingHeader } from './platform-landing-header';
 import { PlatformLandingHero } from './platform-landing-hero';
@@ -23,6 +24,7 @@ export async function PlatformLandingPage({
 
   return (
     <div className="relative min-h-svh overflow-x-hidden bg-white text-[var(--marketing-navy)]">
+      <CsrfBootstrap />
       <PlatformLandingHeader loginUrl={platformLoginUrl} />
       <PlatformLandingHero
         content={content}
@@ -33,6 +35,7 @@ export async function PlatformLandingPage({
       <PlatformTestimonials
         title={content.testimonialsTitle}
         testimonials={content.testimonials}
+        shops={shops}
       />
       <PlatformPricing
         title={content.pricingTitle}

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PLATFORM_LANDING } from '../types/landing-content';
-import { resolvePlatformLoginUrl } from './marketing-page-data';
+import {
+  normalizePlatformLanding,
+  resolvePlatformLoginUrl,
+} from './marketing-page-data';
 
 describe('resolvePlatformLoginUrl', () => {
   it('uses relative login on platform host', () => {
@@ -21,5 +24,15 @@ describe('DEFAULT_PLATFORM_LANDING', () => {
     expect(DEFAULT_PLATFORM_LANDING.plans).toHaveLength(3);
     expect(DEFAULT_PLATFORM_LANDING.contact.email).toContain('@');
     expect(DEFAULT_PLATFORM_LANDING.partnersTitle.length).toBeGreaterThan(0);
+  });
+});
+
+describe('normalizePlatformLanding', () => {
+  it('keeps an empty testimonials list from the CMS', () => {
+    const normalized = normalizePlatformLanding({
+      ...DEFAULT_PLATFORM_LANDING,
+      testimonials: [],
+    });
+    expect(normalized.testimonials).toEqual([]);
   });
 });

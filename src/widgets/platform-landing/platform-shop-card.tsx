@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowUpRight } from 'lucide-react';
 import type { PublicShopCard } from '@/entities/tenant';
 import { buildBrandHeroPalette } from '@/shared/lib/marketing/brand-hero-palette';
+import { tenantSiteUrl } from '@/shared/lib/tenant-url';
 import { TiltStage } from '@/shared/ui/marketing';
 
 interface PlatformShopCardProps {
@@ -14,13 +15,13 @@ interface PlatformShopCardProps {
 export function PlatformShopCard({ shop }: PlatformShopCardProps) {
   const t = useTranslations('marketing.platform');
   const palette = buildBrandHeroPalette(shop.brandColor);
+  const href = tenantSiteUrl(shop.subdomain);
   const hostLabel = `${shop.subdomain}.barberly.mn`;
 
   return (
     <TiltStage maxTilt={8} className="h-full">
       <a
-        href={shop.href}
-        rel="noreferrer"
+        href={href}
         className="group flex h-full flex-col overflow-hidden rounded-2xl border border-black/8 bg-[#0a0a0a] text-white shadow-[0_24px_60px_-28px_rgba(15,10,40,0.55)] transition-shadow hover:shadow-[0_32px_70px_-24px_rgba(15,10,40,0.7)]"
       >
         <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2.5">

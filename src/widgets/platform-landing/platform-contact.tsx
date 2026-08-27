@@ -1,8 +1,8 @@
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import type { PlatformContactInfo } from '@/entities/tenant';
+import { PlatformContactForm } from '@/features/platform-landing';
 import { Container, GradientRibbon, Section, SectionHeader } from '@/shared/ui/marketing';
-import { PlatformContactForm } from './platform-contact-form';
 
 interface PlatformContactProps {
   contact: PlatformContactInfo;
@@ -54,7 +54,7 @@ export async function PlatformContact({ contact }: PlatformContactProps) {
                 ))}
               </ul>
             </div>
-            <PlatformContactForm contact={contact} />
+            <PlatformContactForm />
           </div>
         </Container>
       </Section>

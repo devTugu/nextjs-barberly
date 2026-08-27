@@ -40,7 +40,7 @@ export interface TenantMarketingContext {
   upcomingHolidays: Array<{ localDate: string; name: string }>;
 }
 
-function normalizePlatformLanding(
+export function normalizePlatformLanding(
   raw?: Partial<PlatformLandingContent> | null,
 ): PlatformLandingContent {
   return {
@@ -55,7 +55,7 @@ function normalizePlatformLanding(
     partners: raw?.partners?.length
       ? raw.partners
       : DEFAULT_PLATFORM_LANDING.partners,
-    testimonials: raw?.testimonials?.length
+    testimonials: Array.isArray(raw?.testimonials)
       ? raw.testimonials
       : DEFAULT_PLATFORM_LANDING.testimonials,
     plans: raw?.plans?.length ? raw.plans : DEFAULT_PLATFORM_LANDING.plans,

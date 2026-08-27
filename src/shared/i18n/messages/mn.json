@@ -390,7 +390,17 @@
     "features": "Онцлогууд",
     "benefits": "Давуу тал",
     "featureTitle": "Гарчиг",
-    "featureDescription": "Тайлбар"
+    "featureDescription": "Тайлбар",
+    "testimonials": "Хүмүүсийн сэтгэгдэл",
+    "testimonialsTitle": "Сэтгэгдлийн гарчиг",
+    "testimonialsHint": "Идэвхтэй tenant-аас сонгож оноох, эсвэл нэр/албан тушаалыг гараар бичнэ.",
+    "addTestimonial": "Сэтгэгдэл нэмэх",
+    "removeTestimonial": "Сэтгэгдэл хасах",
+    "pickTenant": "Tenant оноох",
+    "tenantOwnerRole": "Салоны эзэн",
+    "testimonialQuote": "Сэтгэгдэл",
+    "testimonialName": "Нэр",
+    "testimonialRole": "Албан тушаал"
   },
   "home": {
     "heroTagline": "Үсчинийгийн",
@@ -1351,6 +1361,10 @@
       "contactName": "Нэр",
       "contactMessage": "Мессеж",
       "contactSend": "Бичих",
+      "contactSending": "Илгээж байна…",
+      "contactSuccess": "Мессеж илгээгдлээ. Бид хариулах болно.",
+      "contactError": "Илгээж чадсангүй. Дахин оролдоно уу.",
+      "contactInvalid": "Нэр, имэйл, мессежээ бөглөнө үү.",
       "highlightedPlan": "Түгээмэл сонголт"
     },
     "nav": {

@@ -45,6 +45,7 @@ export interface PlatformTestimonial {
   quote: string;
   name: string;
   role: string;
+  tenantSubdomain?: string | null;
 }
 
 export interface PlatformPricePlan {

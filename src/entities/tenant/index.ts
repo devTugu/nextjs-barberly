@@ -28,6 +28,7 @@ export {
   buildMarketingMetadata,
   loadPlatformLanding,
   loadTenantMarketingContext,
+  normalizePlatformLanding,
   resolvePlatformLoginUrl,
   tenantExists,
 } from './lib/marketing-page-data';
@@ -38,3 +39,6 @@ export type {
 } from './lib/marketing-page-data';
 export { loadPublicShopDirectory } from './lib/public-shop-directory';
 export type { PublicShopCard } from './types/public-shop';
+export { submitPlatformContact } from './lib/submit-platform-contact';
+export { platformContactSchema } from './lib/platform-contact.schema';
+export type { PlatformContactInput } from './lib/platform-contact.schema';

@@ -142,6 +142,7 @@ export const API_ENDPOINTS = {
     SERVICES: '/public/services',
     SCHEDULE_SUMMARY: '/public/schedule/summary',
     PLATFORM_LANDING: '/public/platform/landing',
+    PLATFORM_CONTACT: '/public/platform/contact',
     STAFF: '/public/staff',
     SLOTS: '/public/available-slots',
     LOCK: '/public/bookings/lock',

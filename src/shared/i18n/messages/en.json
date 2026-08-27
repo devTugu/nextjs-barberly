@@ -390,7 +390,17 @@
     "features": "Features",
     "benefits": "Benefits",
     "featureTitle": "Title",
-    "featureDescription": "Description"
+    "featureDescription": "Description",
+    "testimonials": "Testimonials",
+    "testimonialsTitle": "Testimonials heading",
+    "testimonialsHint": "Pick a live tenant to attribute a quote, or type a name and role.",
+    "addTestimonial": "Add quote",
+    "removeTestimonial": "Remove quote",
+    "pickTenant": "Assign tenant",
+    "tenantOwnerRole": "Shop owner",
+    "testimonialQuote": "Quote",
+    "testimonialName": "Name",
+    "testimonialRole": "Role"
   },
   "home": {
     "heroTagline": "Barbershop",
@@ -1348,6 +1358,10 @@
       "contactName": "Name",
       "contactMessage": "Message",
       "contactSend": "Write to us",
+      "contactSending": "Sending…",
+      "contactSuccess": "Message sent. We will get back to you.",
+      "contactError": "Could not send the message. Try again.",
+      "contactInvalid": "Enter your name, email, and a short message.",
       "highlightedPlan": "Most chosen"
     },
     "nav": {

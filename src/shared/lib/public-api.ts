@@ -56,3 +56,19 @@ export async function publicPost<T>(
   });
   return parseJson<T>(response);
 }
+
+/** Platform-host POST — no tenant query param. */
+export async function publicPostAnonymous<T>(
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const csrf = await mutatingFetchHeaders();
+  const url = new URL(`/api/public${path}`, window.location.origin);
+  const response = await fetch(url.toString(), {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...csrf },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return parseJson<T>(response);
+}
