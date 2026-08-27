@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useBookings } from '@/entities/booking';
@@ -91,11 +91,7 @@ export function AdminCalendarPanel() {
         : Number(effectiveStaffFilter),
   });
 
-  const lastSyncedAtRef = useRef<number | null>(null);
-  if (data && isOnline) {
-    lastSyncedAtRef.current = dataUpdatedAt;
-  }
-  const lastSyncedAt = lastSyncedAtRef.current;
+  const lastSyncedAt = data ? dataUpdatedAt : null;
 
   const items = useMemo(
     () =>
