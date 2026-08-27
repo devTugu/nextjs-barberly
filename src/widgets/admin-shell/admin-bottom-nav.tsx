@@ -12,7 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES, type PermissionCode } from '@/shared/config/permissions';
 import { cn } from '@/shared/lib/utils';
 import { ROUTES } from '@/shared/config/routes';

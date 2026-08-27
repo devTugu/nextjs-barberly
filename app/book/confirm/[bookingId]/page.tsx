@@ -7,13 +7,13 @@ import { useTranslations } from 'next-intl';
 import { publicGet } from '@/shared/lib/public-api';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { clearBookingDraft } from '@/features/booking-wizard/lib/booking-session';
-import { BookingServicesSummary } from '@/features/booking-wizard/ui/booking-services-summary';
+import { clearBookingDraft } from '@/features/booking-wizard';
+import { BookingServicesSummary } from '@/features/booking-wizard';
 import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
 import { PageLoading } from '@/shared/ui/page-states';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import type { PublicBooking } from '@/entities/booking/api/public-booking';
+import type { PublicBooking } from '@/entities/booking';
 
 type BookingStatus =
   | 'confirmed'

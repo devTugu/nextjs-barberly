@@ -9,7 +9,7 @@ import {
   type BookingOutput,
   useBookings,
 } from '@/entities/booking';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
@@ -17,7 +17,7 @@ import {
   DataTable,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Button } from '@/shared/ui/button';
 import {
   Select,
@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { useBookingColumns } from '@/entities/booking/ui/booking-columns';
+import { useBookingColumns } from '@/entities/booking';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 

@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { useStaffEarnings } from '@/entities/finance/api/queries';
+import { useStaffEarnings } from '@/entities/finance';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageLoading } from '@/shared/ui/page-states';
 

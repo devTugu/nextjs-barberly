@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ScheduleTemplate } from '@/entities/schedule';
@@ -53,7 +53,16 @@ function buildDrafts(template?: ScheduleTemplate | null): Record<number, ShiftDr
   return drafts;
 }
 
-export function ScheduleTemplateEditor({
+export function ScheduleTemplateEditor(props: Props) {
+  return (
+    <ScheduleTemplateEditorInner
+      key={props.template?.id ?? 'new'}
+      {...props}
+    />
+  );
+}
+
+function ScheduleTemplateEditorInner({
   template,
   onSubmit,
   onCancel,
@@ -61,22 +70,21 @@ export function ScheduleTemplateEditor({
 }: Props) {
   const t = useTranslations('entities.schedule');
   const tCommon = useTranslations('common');
+  const initialDrafts = buildDrafts(template);
   const [name, setName] = useState(template?.name ?? '');
   const [description, setDescription] = useState(template?.description ?? '');
-  const [enabledDays, setEnabledDays] = useState<Record<number, boolean>>({});
-  const [drafts, setDrafts] = useState<Record<number, ShiftDraft[]>>({});
-
-  useEffect(() => {
-    const nextDrafts = buildDrafts(template);
-    setDrafts(nextDrafts);
-    const enabled: Record<number, boolean> = {};
-    for (let day = 1; day <= 7; day += 1) {
-      enabled[day] = (nextDrafts[day]?.length ?? 0) > 0;
-    }
-    setEnabledDays(enabled);
-    setName(template?.name ?? '');
-    setDescription(template?.description ?? '');
-  }, [template]);
+  const [enabledDays, setEnabledDays] = useState<Record<number, boolean>>(
+    () => {
+      const enabled: Record<number, boolean> = {};
+      for (let day = 1; day <= 7; day += 1) {
+        enabled[day] = (initialDrafts[day]?.length ?? 0) > 0;
+      }
+      return enabled;
+    },
+  );
+  const [drafts, setDrafts] = useState<Record<number, ShiftDraft[]>>(
+    initialDrafts,
+  );
 
   const toggleDay = (day: number, checked: boolean) => {
     setEnabledDays((prev) => ({ ...prev, [day]: checked }));

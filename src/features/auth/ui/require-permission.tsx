@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/card';
-import { useAuthPermissions } from '../hooks/use-permissions';
+import { useAuthPermissions } from '@/entities/session';
 
 interface RequirePermissionProps {
   permission: PermissionCode;

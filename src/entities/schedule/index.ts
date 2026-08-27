@@ -42,3 +42,12 @@ export {
   useUpdateStaffDayException,
   useUpdateStaffShift,
 } from './api/mutations';
+
+export {
+  resolveEffectiveHours,
+  splitShiftWithBreak,
+} from './lib/effective-hours';
+export type {
+  EffectiveHoursInput,
+  EffectiveHoursWindow,
+} from './lib/effective-hours';

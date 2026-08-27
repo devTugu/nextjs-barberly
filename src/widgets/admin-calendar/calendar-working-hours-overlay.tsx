@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { resolveEffectiveHours } from '@/entities/schedule/lib/effective-hours';
+import { resolveEffectiveHours } from '@/entities/schedule';
 import {
   useStaffDayExceptions,
   useStaffShifts,

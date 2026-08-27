@@ -5,7 +5,7 @@ import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 import { Loader2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { useUploadMedia } from '@/entities/media/api/mutations';
+import { useUploadMedia } from '../api/mutations';
 import { getErrorMessage } from '@/shared/api';
 import {
   FormControl,

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { brandPrimarySlotClass } from '@/shared/lib/brand-styles';
-import { formatSlotTime } from '../lib/booking-format';
+import { formatSlotTime } from '@/entities/booking';
 
 export type SlotSelection = { startAtUtc: string; staffId: number };
 

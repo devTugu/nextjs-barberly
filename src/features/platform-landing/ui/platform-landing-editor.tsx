@@ -11,7 +11,7 @@ import { API_ENDPOINTS } from '@/shared/config/api.config';
 import {
   DEFAULT_PLATFORM_LANDING,
   type PlatformLandingContent,
-} from '@/entities/tenant/types/landing-content';
+} from '@/entities/tenant';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';

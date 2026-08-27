@@ -10,8 +10,8 @@ import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { PageEmpty } from '@/shared/ui/page-states';
 import { readBookingDraft, writeBookingDraft } from '../lib/booking-session';
-import { sumServiceDuration, sumServicePrice } from '../lib/booking-math';
-import { formatMnt } from '../lib/booking-format';
+import { sumServiceDuration, sumServicePrice } from '@/entities/booking';
+import { formatMnt } from '@/entities/booking';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/lib/utils';
@@ -25,8 +25,12 @@ type Service = {
 };
 
 export function BookServicesStep() {
-  const router = useRouter();
   const tenant = useTenantSubdomain();
+  return <BookServicesStepInner key={tenant} tenant={tenant} />;
+}
+
+function BookServicesStepInner({ tenant }: { tenant: string }) {
+  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('bookingWizard');
   const draft = readBookingDraft();
@@ -36,13 +40,22 @@ export function BookServicesStep() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     publicGet<Service[]>('/services', tenant)
-      .then(setServices)
-      .catch((e) =>
-        setError(isPublicApiError(e) ? e.message : t('errors.loadServices')),
-      )
-      .finally(() => setLoading(false));
+      .then((next) => {
+        if (!cancelled) setServices(next);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setError(isPublicApiError(e) ? e.message : t('errors.loadServices'));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [tenant, t]);
 
   const totalDuration = useMemo(

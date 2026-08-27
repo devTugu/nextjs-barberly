@@ -2,8 +2,8 @@
 
 import { AuthGuard, SessionExpiryDialog, TokenRefreshScheduler } from '@/features/auth';
 import { AppSidebar, SiteHeader } from '@/widgets/app-sidebar';
-import { CsrfBootstrap } from '@/widgets/csrf-bootstrap/csrf-bootstrap';
-import { PageTransition } from '@/widgets/motion/page-transition';
+import { CsrfBootstrap } from '@/shared/ui/csrf-bootstrap';
+import { PageTransition } from '@/shared/ui/page-transition';
 import { useTranslations } from 'next-intl';
 import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar';
 

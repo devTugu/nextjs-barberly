@@ -4,17 +4,17 @@ import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { usePermissionList, type Permission } from '@/entities/permission';
-import { usePermissionColumns } from '@/entities/permission/ui/permission-columns';
-import { useAuthPermissions } from '@/features/auth';
+import { usePermissionColumns } from '@/entities/permission';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
-import { AdminTableActions } from '@/widgets/admin-table-actions';
+import { AdminTableActions } from '@/shared/ui/admin-table-actions';
 import {
   DataTable,
   DataTableToolbar,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Button } from '@/shared/ui/button';
 import {
   PermissionManageSheet,
@@ -45,8 +45,8 @@ export function PermissionsTable() {
         cell: ({ row }) => (
           <AdminTableActions
             name={row.original.code}
-            updatePermission={PERMISSION_CODES.PERMISSION_UPDATE}
-            deletePermission={PERMISSION_CODES.PERMISSION_DELETE}
+            canEdit={can(PERMISSION_CODES.PERMISSION_UPDATE)}
+            canDelete={can(PERMISSION_CODES.PERMISSION_DELETE)}
             onEdit={() =>
               setSheetState({ mode: 'edit', permission: row.original })
             }
@@ -55,7 +55,7 @@ export function PermissionsTable() {
         ),
       },
     ],
-    [permissionColumns, tCommon],
+    [permissionColumns, tCommon, can],
   );
 
   const canCreate = can(PERMISSION_CODES.PERMISSION_CREATE);

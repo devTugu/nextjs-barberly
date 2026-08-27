@@ -1,4 +1,4 @@
-import { AdminAuthBrandEffect } from '@/features/admin-auth/ui/admin-auth-brand-effect';
+import { AdminAuthBrandEffect } from '@/widgets/admin-auth';
 
 export default function AdminAuthLayout({
   children,

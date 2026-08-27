@@ -24,3 +24,4 @@ export type {
   PlatformFinanceTenantRow,
 } from './types/platform-finance';
 export type { TenantDashboardStats } from './types/tenant-dashboard-stats';
+export { usePlatformFinanceColumns } from './ui/platform-finance-columns';

@@ -3,11 +3,11 @@
 import { AuthGuard, SessionExpiryDialog, TokenRefreshScheduler } from '@/features/auth';
 import { AdminSidebar } from '@/widgets/admin-sidebar';
 import { SiteHeader } from '@/widgets/app-sidebar';
-import { CsrfBootstrap } from '@/widgets/csrf-bootstrap/csrf-bootstrap';
+import { CsrfBootstrap } from '@/shared/ui/csrf-bootstrap';
 import { AdminAppShell } from '@/widgets/admin-shell';
-import { AdminPwaBootstrap } from '@/widgets/admin-pwa/admin-pwa-bootstrap';
-import { PushPermissionBanner } from '@/widgets/admin-pwa/push-permission-banner';
-import { PageTransition } from '@/widgets/motion/page-transition';
+import { AdminPwaBootstrap } from '@/widgets/admin-pwa';
+import { PushPermissionBanner } from '@/widgets/admin-pwa';
+import { PageTransition } from '@/shared/ui/page-transition';
 import { useTranslations } from 'next-intl';
 import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar';
 

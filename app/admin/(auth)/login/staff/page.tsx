@@ -1,4 +1,4 @@
-import { AdminStaffLoginClient } from '@/features/admin-auth/ui/admin-staff-login-client';
+import { AdminStaffLoginClient } from '@/widgets/admin-auth';
 
 export default function AdminStaffLoginPage() {
   return <AdminStaffLoginClient />;

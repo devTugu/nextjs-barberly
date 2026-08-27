@@ -1,4 +1,4 @@
-import { CsrfBootstrap } from '@/widgets/csrf-bootstrap/csrf-bootstrap';
+import { CsrfBootstrap } from '@/shared/ui/csrf-bootstrap';
 
 export default function AuthLayout({
   children,

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Calendar, LayoutDashboard, Wallet } from 'lucide-react';
-import type { PlatformLandingContent } from '@/entities/tenant/types/landing-content';
+import type { PlatformLandingContent } from '@/entities/tenant';
 import { MarketingGridPattern } from '@/shared/ui/marketing';
 import { Button } from '@/shared/ui/button';
 

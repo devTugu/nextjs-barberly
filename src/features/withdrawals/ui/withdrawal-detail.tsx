@@ -10,7 +10,7 @@ import {
   useApproveWithdrawal,
   useRejectWithdrawal,
   useWithdrawal,
-} from '@/entities/withdrawal/api/queries';
+} from '@/entities/withdrawal';
 import { getErrorMessage } from '@/shared/api';
 import { ROUTES } from '@/shared/config/routes';
 import { getDateLocale } from '@/shared/i18n/messages';

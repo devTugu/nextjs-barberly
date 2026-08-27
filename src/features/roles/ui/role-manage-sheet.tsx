@@ -16,11 +16,11 @@ import {
   useUpdateRole,
 } from '@/entities/role';
 import { usePermissionList } from '@/entities/permission';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
-import { AdminFormSheet } from '@/widgets/admin-form-sheet';
-import { PermissionPicker } from '@/widgets/permission-picker';
+import { AdminFormSheet } from '@/shared/ui/admin-form-sheet';
+import { PermissionPicker } from '@/entities/permission';
 import { Button } from '@/shared/ui/button';
 import {
   Form,

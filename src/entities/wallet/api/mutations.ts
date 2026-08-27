@@ -6,7 +6,7 @@ import { API_ENDPOINTS } from '@/shared/config/api.config';
 import { tenantQueryParams } from '@/shared/hooks/use-tenant-subdomain';
 import type { WalletTransaction, WithdrawInput } from '../types/wallet';
 import { walletKeys } from './queries';
-import { withdrawalKeys } from '@/entities/withdrawal/api/queries';
+import { withdrawalKeys } from '@/entities/withdrawal';
 
 export const useRequestWithdrawal = (tenant: string) => {
   const queryClient = useQueryClient();

@@ -7,7 +7,7 @@ import { Gift, Wallet } from 'lucide-react';
 import { publicGet } from '@/shared/lib/public-api';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { formatBookingDateTime, formatMnt } from '@/features/booking-wizard/lib/booking-format';
+import { formatBookingDateTime, formatMnt } from '@/entities/booking';
 import { PageEmpty, PageLoading } from '@/shared/ui/page-states';
 import { Button } from '@/shared/ui/button';
 import { BookingStatusBadge } from './booking-status-badge';

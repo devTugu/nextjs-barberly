@@ -17,12 +17,12 @@ import {
   downloadPlatformFinanceCsv,
   usePlatformFinance,
 } from '@/entities/dashboard';
-import { usePlatformFinanceColumns } from '@/entities/dashboard/ui/platform-finance-columns';
+import { usePlatformFinanceColumns } from '@/entities/dashboard';
 import {
   DataTable,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Button } from '@/shared/ui/button';
 import {
   Card,

@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Loader2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { useUploadMedia } from '@/entities/media/api/mutations';
-import { useMyTenant, useUpdateMyTenant } from '@/entities/tenant';
+import { useUploadMedia } from '@/entities/media';
 import {
   DEFAULT_TENANT_LANDING,
+  type Tenant,
   type TenantLandingContent,
-} from '@/entities/tenant/types/landing-content';
-import { useAuthPermissions } from '@/features/auth';
+  useMyTenant,
+  useUpdateMyTenant,
+} from '@/entities/tenant';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
@@ -34,37 +36,44 @@ function toFormValues(content?: TenantLandingContent | null): TenantLandingConte
 type ImageField = 'aboutImageUrl' | 'pricingImageUrl';
 
 export function AdminLandingContentForm() {
+  const tenant = useTenantSubdomain();
+  const { data, isLoading } = useMyTenant(tenant);
+  if (isLoading) return <Skeleton className="h-96 w-full max-w-2xl" />;
+  if (!data) return null;
+  return (
+    <AdminLandingContentFormLoaded key={data.id} data={data} tenant={tenant} />
+  );
+}
+
+function AdminLandingContentFormLoaded({
+  data,
+  tenant,
+}: {
+  data: Tenant;
+  tenant: string;
+}) {
   const t = useTranslations('adminSettings');
   const tCommon = useTranslations('common');
-  const tenant = useTenantSubdomain();
   const { can } = useAuthPermissions();
-  const { data, isLoading } = useMyTenant(tenant);
   const updateTenant = useUpdateMyTenant(tenant);
   const uploadMedia = useUploadMedia();
   const aboutInputRef = useRef<HTMLInputElement>(null);
   const pricingInputRef = useRef<HTMLInputElement>(null);
-  const isChild = Boolean(data?.inheritance?.isChild);
-  const [inheritLanding, setInheritLanding] = useState(true);
+  const isChild = Boolean(data.inheritance?.isChild);
+  const own = data.inheritance?.own;
+  const [inheritLanding, setInheritLanding] = useState(
+    isChild && own?.landingContent == null,
+  );
 
   const form = useForm<TenantLandingContent>({
-    defaultValues: toFormValues(),
+    defaultValues: toFormValues(
+      inheritLanding
+        ? data.settings.landingContent
+        : (own?.landingContent ?? data.settings.landingContent),
+    ),
   });
 
   const { fields } = useFieldArray({ control: form.control, name: 'features' });
-
-  useEffect(() => {
-    if (!data) return;
-    const own = data.inheritance?.own;
-    const inherited = isChild && own?.landingContent == null;
-    setInheritLanding(inherited);
-    form.reset(
-      toFormValues(
-        inherited
-          ? data.settings.landingContent
-          : (own?.landingContent ?? data.settings.landingContent),
-      ),
-    );
-  }, [data, form, isChild]);
 
   const canSubmit = can(PERMISSION_CODES.TENANT_SETTINGS_UPDATE);
   const canUpload =
@@ -138,8 +147,6 @@ export function AdminLandingContentForm() {
       )}
     />
   );
-
-  if (isLoading) return <Skeleton className="h-96 w-full max-w-2xl" />;
 
   return (
     <Card className="max-w-2xl">

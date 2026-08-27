@@ -20,3 +20,16 @@ export type {
   UpdateTenantFormValues,
 } from './lib/tenant.schema';
 export * from './api';
+export { useTenantColumns } from './ui/tenant-columns';
+export {
+  buildMarketingMetadata,
+  loadPlatformLanding,
+  loadTenantMarketingContext,
+  resolvePlatformLoginUrl,
+  tenantExists,
+} from './lib/marketing-page-data';
+export type {
+  PublicService,
+  PublicTenantSettings,
+  TenantMarketingContext,
+} from './lib/marketing-page-data';

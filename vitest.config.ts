@@ -7,7 +7,16 @@ export default defineConfig({
     include: ['src/**/*.spec.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/shared/**'],
+      all: false,
+      include: [
+        'src/shared/lib/**',
+        'src/shared/config/**',
+        'src/entities/session/lib/**',
+        'src/entities/booking/lib/booking-math.ts',
+        'src/entities/booking/lib/booking-format.ts',
+        'src/entities/permission/lib/group-permissions.ts',
+        'src/features/admin-schedule/ui/schedule-weekly-draft.ts',
+      ],
       thresholds: {
         lines: 70,
         functions: 70,

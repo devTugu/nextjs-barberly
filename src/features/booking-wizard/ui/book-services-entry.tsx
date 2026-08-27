@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { BookServicesStep } from '@/features/booking-wizard';
+import { BookServicesStep } from './book-services-step';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { publicGet } from '@/shared/lib/public-api';

@@ -12,10 +12,10 @@ import {
   useUpdateScheduleTemplate,
   type ScheduleTemplate,
 } from '@/entities/schedule';
-import { ScheduleDeleteButton } from '@/features/admin-schedule/ui/schedule-delete-button';
-import { ScheduleTemplateEditor } from '@/features/admin-schedule/ui/schedule-template-editor';
-import { canManageSchedule } from '@/features/admin-schedule/ui/schedule-tenant-shared';
-import { useAuthPermissions } from '@/features/auth';
+import { ScheduleDeleteButton } from './schedule-delete-button';
+import { ScheduleTemplateEditor } from './schedule-template-editor';
+import { canManageSchedule } from './schedule-tenant-shared';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';

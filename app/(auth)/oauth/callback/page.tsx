@@ -10,13 +10,13 @@ import {
   useConfirmMfaEnrollment,
   useVerifyMfaLogin,
 } from '@/features/auth';
-import { MfaEnrollmentStep } from '@/features/auth/ui/mfa-enrollment-step';
-import { MfaVerifyForm } from '@/features/mfa/ui/mfa-verify-form';
-import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
+import { MfaEnrollmentStep } from '@/features/mfa';
+import { MfaVerifyForm } from '@/features/mfa';
+import { resolveMfaErrorMessage } from '@/features/mfa';
 import { bffMe, bffOAuthCallback } from '@/shared/lib/bff-auth';
-import { OAUTH_STATE_KEY } from '@/widgets/oauth-sign-in-button/oauth-sign-in-button';
+import { OAUTH_STATE_KEY } from '@/widgets/login-form';
 import { ROUTES } from '@/shared/config/routes';
-import { useAuthStore } from '@/features/auth/model/store';
+import { useAuthStore } from '@/entities/session';
 import { sessionHint } from '@/shared/lib/session-hint';
 import type { UserOutput } from '@/entities/user';
 import { getErrorMessage } from '@/shared/api';

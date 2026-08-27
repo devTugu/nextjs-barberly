@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { publicGet } from '@/shared/lib/public-api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { ROUTES } from '@/shared/config/routes';
-import { navigateToBranchWithSession } from '@/features/customer-auth/lib/navigate-branch-session';
+import { navigateToBranchWithSession } from '@/entities/customer';
 import { cn } from '@/shared/lib/utils';
 
 export interface PublicBranch {

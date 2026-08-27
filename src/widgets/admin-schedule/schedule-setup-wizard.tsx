@@ -11,9 +11,9 @@ import {
   useScheduleTemplates,
   useStaffShifts,
 } from '@/entities/schedule';
-import { splitShiftWithBreak } from '@/entities/schedule/lib/effective-hours';
-import { useStaffList } from '@/entities/staff/api/queries';
-import { ScheduleWeeklyEditor } from '@/features/admin-schedule/ui/schedule-weekly-editor';
+import { splitShiftWithBreak } from '@/entities/schedule';
+import { useStaffList } from '@/entities/staff';
+import { ScheduleWeeklyEditor } from '@/features/admin-schedule';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { getErrorMessage } from '@/shared/api';

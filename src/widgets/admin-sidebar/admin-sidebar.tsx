@@ -20,10 +20,10 @@ import {
   PERMISSION_CODES,
   type PermissionCode,
 } from '@/shared/config/permissions';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import type { AppMessages } from '@/shared/i18n/messages';
 import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
-import { TenantSwitcher } from '@/widgets/tenant-switcher/tenant-switcher';
+import { TenantSwitcher } from './tenant-switcher';
 import {
   Sidebar,
   SidebarContent,
@@ -36,8 +36,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/shared/ui/sidebar';
-import { NavUser } from '@/widgets/app-sidebar/nav-user';
-import { NavSection, type NavSectionItem } from '@/widgets/shared/nav-section';
+import { NavUser } from '@/features/auth';
+import { NavSection, type NavSectionItem } from '@/shared/ui/nav-section';
 
 type AdminNavTitleKey = keyof Pick<
   AppMessages['nav'],

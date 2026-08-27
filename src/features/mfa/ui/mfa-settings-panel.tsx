@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
-import { useAuthStore } from '@/features/auth/model/store';
-import { MfaSetupPanel } from '@/features/mfa/ui/mfa-setup-panel';
-import { TotpCodeInput } from '@/features/mfa/ui/totp-code-input';
+import { resolveMfaErrorMessage } from '../lib/resolve-mfa-error-message';
+import { useAuthStore } from '@/entities/session';
+import { MfaSetupPanel } from './mfa-setup-panel';
+import { TotpCodeInput } from './totp-code-input';
 import { bffMe } from '@/shared/lib/bff-auth';
 import type { UserOutput } from '@/entities/user';
 import { useTranslations } from 'next-intl';

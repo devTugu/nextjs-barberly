@@ -1,4 +1,4 @@
-import { SupportTicketsPanel } from '@/widgets/support-tickets/support-tickets-panel';
+import { SupportTicketsPanel } from '@/widgets/support-tickets';
 
 export default function PlatformSupportPage() {
   return <SupportTicketsPanel />;

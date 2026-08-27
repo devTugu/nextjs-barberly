@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
@@ -11,8 +11,8 @@ import {
   useWalletWithdrawals,
   type WalletWithdrawalRequest,
 } from '@/entities/wallet';
-import { useWalletTransactionColumns } from '@/entities/wallet/ui/wallet-columns';
-import { useAuthPermissions } from '@/features/auth';
+import { useWalletTransactionColumns } from '@/entities/wallet';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
@@ -21,7 +21,7 @@ import {
   DataTable,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -83,16 +83,18 @@ export function WalletOverview() {
   const txColumns = useWalletTransactionColumns();
   const withdrawalColumns = useWithdrawalColumns();
   const { pagination, setPagination, queryParams } = useTableSearchParams();
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const urlWithdraw = searchParams.get('withdraw') === '1';
+  const [manualWithdraw, setManualWithdraw] = useState(false);
+  const withdrawOpen = urlWithdraw || manualWithdraw;
   const [batchOpen, setBatchOpen] = useState(false);
   const [tab, setTab] = useState('transactions');
 
-  useEffect(() => {
-    if (searchParams.get('withdraw') === '1') {
-      setWithdrawOpen(true);
+  const setWithdrawOpen = (open: boolean) => {
+    setManualWithdraw(open);
+    if (!open && urlWithdraw) {
       router.replace(ROUTES.ADMIN_WALLET);
     }
-  }, [searchParams, router]);
+  };
 
   const balanceQuery = useWalletBalance(tenant);
   const brandBalancesQuery = useBrandBranchBalances(tenant);

@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { MfaSettingsPanel } from '@/features/mfa';
 
 export default async function SecurityPage() {

@@ -8,3 +8,4 @@ export type {
   UpdateUserFormValues,
 } from './lib/user.schema';
 export * from './api';
+export { useUserColumns } from './ui';

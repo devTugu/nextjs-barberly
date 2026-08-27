@@ -15,9 +15,9 @@ import {
   useLogin,
   useVerifyMfaLogin,
 } from '@/features/auth';
-import { MfaEnrollmentStep } from '@/features/auth/ui/mfa-enrollment-step';
-import { MfaVerifyForm } from '@/features/mfa/ui/mfa-verify-form';
-import { resolveMfaErrorMessage } from '@/features/mfa/lib/resolve-mfa-error-message';
+import { MfaEnrollmentStep } from '@/features/mfa';
+import { MfaVerifyForm } from '@/features/mfa';
+import { resolveMfaErrorMessage } from '@/features/mfa';
 import { ROUTES } from '@/shared/config/routes';
 import { getErrorMessage } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
@@ -31,7 +31,7 @@ import {
 } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { FadeIn } from '@/shared/ui/motion';
-import { OAuthSignInButton } from '@/widgets/oauth-sign-in-button';
+import { OAuthSignInButton } from './oauth-sign-in-button';
 
 type SignInStep = 'credentials' | 'mfa-verify' | 'mfa-enroll';
 

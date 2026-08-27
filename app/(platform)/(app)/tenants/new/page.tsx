@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { RequirePermission } from '@/features/auth';
-import { TenantCreatePage } from '@/features/tenants/ui/tenant-pages';
+import { TenantCreatePage } from '@/features/tenants';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 export default async function PlatformTenantNewPage() {

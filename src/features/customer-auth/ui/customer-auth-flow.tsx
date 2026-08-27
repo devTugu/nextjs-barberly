@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { env } from '@/shared/config/env';
 import { ROUTES } from '@/shared/config/routes';
-import { fetchCustomerSession } from '../lib/customer-session';
+import { fetchCustomerSession } from '@/entities/customer';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';

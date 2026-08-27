@@ -1,4 +1,4 @@
-import { CustomerWalletPanel } from '@/features/user-portal/ui/customer-wallet-panel';
+import { CustomerWalletPanel } from '@/features/user-portal';
 
 export default function UserWalletPage() {
   return <CustomerWalletPanel />;
