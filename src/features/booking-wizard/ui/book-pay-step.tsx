@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { publicGet, publicPost } from '@/shared/lib/public-api';
-import type { BookingPayResult } from '@/entities/booking/api/public-booking';
+import type { BookingPayResult } from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
 import { env } from '@/shared/config/env';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
@@ -16,7 +16,7 @@ import {
   readBookingDraft,
   writeBookingDraft,
 } from '../lib/booking-session';
-import { formatMnt } from '../lib/booking-format';
+import { formatMnt } from '@/entities/booking';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { BookingServicesSummary } from './booking-services-summary';
 import { Button } from '@/shared/ui/button';

@@ -14,7 +14,7 @@ import {
   useOfflineSettlement,
   useReopenSettlement,
 } from '@/entities/booking';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { ROUTES } from '@/shared/config/routes';

@@ -8,7 +8,7 @@ import { publicGet } from '@/shared/lib/public-api';
 import { tenantSiteUrl } from '@/shared/lib/tenant-url';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { ROUTES } from '@/shared/config/routes';
-import { navigateToBranchWithSession } from '@/features/customer-auth/lib/navigate-branch-session';
+import { navigateToBranchWithSession } from '@/entities/customer';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { cn } from '@/shared/lib/utils';
 

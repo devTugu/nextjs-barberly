@@ -2,8 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { CustomerBottomNav } from './customer-bottom-nav';
-import { CustomerPwaBootstrap } from '@/widgets/customer-pwa/customer-pwa-bootstrap';
-import { CustomerPushPermissionBanner } from '@/widgets/customer-pwa/customer-push-permission-banner';
+import { CustomerPwaBootstrap } from './customer-pwa-bootstrap';
+import { CustomerPushPermissionBanner } from './customer-push-permission-banner';
 import { TenantBrandBootstrap } from '@/shared/ui/tenant-brand-bootstrap';
 import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
 import { ROUTES } from '@/shared/config/routes';

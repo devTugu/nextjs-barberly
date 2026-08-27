@@ -2,10 +2,10 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { RequirePermission } from '@/features/auth';
-import { BookingDetailActions } from '@/features/admin-bookings/ui/booking-detail-actions';
+import { BookingDetailActions } from '@/features/admin-bookings';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { Button } from '@/shared/ui/button';
 interface PageProps {
   params: Promise<{ id: string }>;

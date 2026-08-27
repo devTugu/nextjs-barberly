@@ -16,3 +16,4 @@ export type {
   AssignRoleFormValues,
 } from './lib/role.schema';
 export * from './api';
+export { useRoleColumns } from './ui/role-columns';

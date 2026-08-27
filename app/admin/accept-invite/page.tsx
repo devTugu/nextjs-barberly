@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { AdminAcceptInviteClient } from '@/features/admin-auth/ui/admin-accept-invite-client';
+import { AdminAcceptInviteClient } from '@/widgets/admin-auth';
 
 export default function AdminAcceptInvitePage() {
   return (

@@ -2,11 +2,11 @@ import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { RequirePermission } from '@/features/auth';
-import { PlatformLandingEditor } from '@/features/platform-landing/ui/platform-landing-editor';
+import { PlatformLandingEditor } from '@/features/platform-landing';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
 import { platformSiteUrl } from '@/shared/lib/tenant-url';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 

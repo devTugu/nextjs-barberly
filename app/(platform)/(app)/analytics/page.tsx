@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { RequirePermission } from '@/features/auth';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { PlatformAnalytics } from '@/widgets/dashboard-stats';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 export default async function AnalyticsPage() {

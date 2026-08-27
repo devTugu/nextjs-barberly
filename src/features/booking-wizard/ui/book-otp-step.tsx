@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { env } from '@/shared/config/env';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { fetchCustomerSession } from '@/features/customer-auth';
+import { fetchCustomerSession } from '@/entities/customer';
 import { readBookingDraft, writeBookingDraft } from '../lib/booking-session';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { Button } from '@/shared/ui/button';

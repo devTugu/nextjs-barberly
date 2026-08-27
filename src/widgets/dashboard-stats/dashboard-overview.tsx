@@ -17,9 +17,9 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useDashboardStats, usePlatformFinance } from '@/entities/dashboard';
-import { useWithdrawals } from '@/entities/withdrawal/api/queries';
-import { useAuthPermissions } from '@/features/auth';
-import { useAuthStore } from '@/features/auth/model/store';
+import { useWithdrawals } from '@/entities/withdrawal';
+import { useAuthPermissions } from '@/entities/session';
+import { useAuthStore } from '@/entities/session';
 import { usePageVisible } from '@/shared/hooks/use-page-visible';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';

@@ -3,9 +3,9 @@
 import { Suspense, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { RequirePermission } from '@/features/auth';
-import { ManualBookingSheet } from '@/features/admin-bookings/ui/manual-booking-sheet';
+import { ManualBookingSheet } from '@/features/admin-bookings';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { Button } from '@/shared/ui/button';
 
 function ManualBookingPageContent() {

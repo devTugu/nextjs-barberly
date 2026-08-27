@@ -16,14 +16,14 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
-import { useWithdrawals } from '@/entities/withdrawal/api/queries';
+import { useWithdrawals } from '@/entities/withdrawal';
 import { env } from '@/shared/config/env';
 import { ROUTES } from '@/shared/config/routes';
 import {
   PERMISSION_CODES,
   type PermissionCode,
 } from '@/shared/config/permissions';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { usePageVisible } from '@/shared/hooks/use-page-visible';
 import type { AppMessages } from '@/shared/i18n/messages';
 import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
@@ -40,8 +40,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/shared/ui/sidebar';
-import { NavUser } from './nav-user';
-import { NavSection, type NavSectionItem } from '@/widgets/shared/nav-section';
+import { NavUser } from '@/features/auth';
+import { NavSection, type NavSectionItem } from '@/shared/ui/nav-section';
 
 type NavTitleKey = keyof AppMessages['nav'];
 

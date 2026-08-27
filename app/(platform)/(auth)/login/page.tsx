@@ -8,7 +8,7 @@ import { getStepHeadings } from '@/shared/i18n/messages';
 import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
 import type { Locale } from '@/shared/i18n/config';
 import { BrandLogo } from '@/shared/ui/brand-logo';
-import { LoginForm, type SignInStep } from '@/widgets/login-form/login-form';
+import { LoginForm, type SignInStep } from '@/widgets/login-form';
 
 export default function SignInPage() {
   const [step, setStep] = useState<SignInStep>('credentials');

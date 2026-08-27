@@ -10,7 +10,7 @@ import {
   formatBookingDateTime,
   formatMnt,
   serviceLabel,
-} from '@/features/booking-wizard/lib/booking-format';
+} from '@/entities/booking';
 import { PageEmpty, PageLoading } from '@/shared/ui/page-states';
 import { BookingStatusBadge } from './booking-status-badge';
 import { CustomerBookingCard, CustomerHomeHeader, UpcomingBookingCard } from './customer-home';

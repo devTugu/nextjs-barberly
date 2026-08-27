@@ -9,16 +9,13 @@ import {
   useState,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  CustomerAuthDialog,
-  fetchCustomerSession,
-  type CustomerSession,
-} from '@/features/customer-auth';
+import { fetchCustomerSession, type CustomerSession } from '@/entities/customer';
+import { CustomerAuthDialog } from '@/features/customer-auth';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { publicGet } from '@/shared/lib/public-api';
 import { tenantSiteUrl } from '@/shared/lib/tenant-url';
-import { CsrfBootstrap } from '@/widgets/csrf-bootstrap/csrf-bootstrap';
+import { CsrfBootstrap } from '@/shared/ui/csrf-bootstrap';
 
 interface PublicBranch {
   id: number;
@@ -82,7 +79,7 @@ export function TenantLandingShell({ children }: TenantLandingShellProps) {
   const [authInitialStep, setAuthInitialStep] = useState<'phone' | 'name'>(
     'phone',
   );
-  const [pendingBookPath, setPendingBookPath] = useState(ROUTES.BOOK);
+  const [pendingBookPath, setPendingBookPath] = useState<string>(ROUTES.BOOK);
 
   const refreshSession = useCallback(async () => {
     const next = await fetchCustomerSession(tenant);

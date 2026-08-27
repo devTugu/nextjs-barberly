@@ -10,8 +10,8 @@ import {
   type BffLoginResult,
 } from '@/shared/lib/bff-auth';
 import { sessionHint } from '@/shared/lib/session-hint';
-import { useAuthStore } from '../model/store';
-import { userKeys } from '@/entities/user/api/queries';
+import { useAuthStore } from '@/entities/session';
+import { userKeys } from '@/entities/user';
 import type { UserOutput } from '@/entities/user';
 import type { SignInRequest } from '../types/auth';
 

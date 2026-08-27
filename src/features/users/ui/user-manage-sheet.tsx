@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -19,44 +18,21 @@ import {
   useAnonymizeUser,
 } from "@/entities/user";
 import { useAssignRole, useRoles, useUnassignRole } from "@/entities/role";
-import { useAuthPermissions, useAuthStore } from "@/features/auth";
-import {
-  PERMISSION_CODES,
-  SUPER_ADMIN_ROLE,
-} from "@/shared/config/permissions";
+import { useAuthPermissions, useAuthStore } from "@/entities/session";
+import { PERMISSION_CODES } from "@/shared/config/permissions";
 import { getErrorMessage } from "@/shared/api";
-import { AdminFormSheet } from "@/widgets/admin-form-sheet";
-import { UserDeleteDialog } from "./user-delete-dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
-import { Badge } from "@/shared/ui/badge";
+import { AdminFormSheet } from "@/shared/ui/admin-form-sheet";
 import { Button } from "@/shared/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import { Switch } from "@/shared/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { UserDeleteDialog } from "./user-delete-dialog";
+import { UserCreateForm } from "./user-create-form";
+import { UserEditProfileForm } from "./user-edit-profile-form";
+import {
+  AnonymizeUserDialog,
+  UnassignRoleDialog,
+} from "./user-manage-dialogs";
+import { UserRolesPanel } from "./user-roles-panel";
+import { UserSheetFooter } from "./user-sheet-footer";
 
 export type UserSheetState =
   | { mode: "create" }
@@ -72,39 +48,9 @@ interface UnassignTarget {
   roleName: string;
 }
 
-function RoleBadge({
-  name,
-  onRemove,
-  canRemove,
-  removeAriaLabel,
-}: {
-  name: string;
-  onRemove?: () => void;
-  canRemove: boolean;
-  removeAriaLabel: string;
-}) {
-  return (
-    <Badge
-      variant={name === SUPER_ADMIN_ROLE ? "default" : "secondary"}
-      className="gap-1 pr-1">
-      {name}
-      {canRemove && onRemove ? (
-        <button
-          type="button"
-          onClick={onRemove}
-          className="rounded-sm p-0.5 hover:bg-background/20"
-          aria-label={removeAriaLabel}>
-          <X className="size-3" />
-        </button>
-      ) : null}
-    </Badge>
-  );
-}
-
 export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
   const t = useTranslations("entities.users");
   const tCommon = useTranslations("common");
-  const tAuth = useTranslations("auth");
   const tTable = useTranslations("table");
   const tVal = useTranslations("validation");
   const { can } = useAuthPermissions();
@@ -114,7 +60,7 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
   const anonymizeUser = useAnonymizeUser();
   const assignRole = useAssignRole();
   const unassignRole = useUnassignRole();
-  const currentUser = useAuthStore((state) => state.user);
+  const currentUser = useAuthStore((store) => store.user);
 
   const isCreate = state?.mode === "create";
   const isEdit = state?.mode === "edit";
@@ -169,7 +115,6 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
     () => createUserSchema(validationMessages),
     [validationMessages],
   );
-
   const updateSchema = useMemo(
     () => updateUserSchema(validationMessages),
     [validationMessages],
@@ -179,7 +124,6 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
     resolver: zodResolver(createSchema),
     defaultValues: { email: "", password: "", isActive: true },
   });
-
   const editForm = useForm<UpdateUserFormValues>({
     resolver: zodResolver(updateSchema),
     defaultValues: { password: "", isActive: true },
@@ -233,11 +177,13 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
   const onEditSubmit = async (values: UpdateUserFormValues) => {
     if (!user) return;
     try {
-      const payload = {
-        isActive: values.isActive,
-        ...(values.password ? { password: values.password } : {}),
-      };
-      await updateUser.mutateAsync({ id: user.id, data: payload });
+      await updateUser.mutateAsync({
+        id: user.id,
+        data: {
+          isActive: values.isActive,
+          ...(values.password ? { password: values.password } : {}),
+        },
+      });
       toast.success(t("toastUpdated"));
       onOpenChange(false);
     } catch (error) {
@@ -306,106 +252,48 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
     exportUserData.isPending ||
     anonymizeUser.isPending;
   const formId = isCreate ? "user-create-form" : "user-edit-form";
-
   const showProfileFooter = isCreate || (isEdit && activeTab === "profile");
-  const footer =
-    showProfileFooter && ((isCreate && canCreate) || (isEdit && canUpdate)) ? (
-      <div className="space-y-4">
-        {isEdit && (canExport || canAnonymize || canDelete) ? (
-          <div className="rounded-md border p-3">
-            <p className="text-sm font-medium">{t("privacyTitle")}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("privacyDescription")}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {canExport ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportData}
-                  disabled={exportUserData.isPending}>
-                  {exportUserData.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : null}
-                  {exportUserData.isPending
-                    ? t("exportingData")
-                    : t("exportData")}
-                </Button>
-              ) : null}
-              {canAnonymize ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setAnonymizeConfirmEmail("");
-                    setAnonymizeOpen(true);
-                  }}>
-                  {t("anonymizePii")}
-                </Button>
-              ) : null}
-            </div>
-            {!canAnonymize && canDelete && currentUser?.id === user?.id ? (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {t("anonymizeSelfBlocked")}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-        {isEdit && canDelete ? (
-          <div className="rounded-md border border-destructive/30 p-3">
-            <p className="text-sm font-medium text-destructive">
-              {tCommon("dangerZone")}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("dangerZoneDescription")}
-            </p>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              className="mt-2"
-              onClick={() => setDeleteOpen(true)}>
-              {t("deleteUser")}
-            </Button>
-          </div>
-        ) : null}
-        <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isPending}>
-            {tCommon("cancel")}
-          </Button>
-          <Button type="submit" form={formId} disabled={isPending}>
-            {isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-            {isCreate ? tCommon("create") : tCommon("save")}
-          </Button>
-        </div>
-      </div>
-    ) : isEdit && activeTab === "roles" ? (
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}>
-          {tCommon("close")}
-        </Button>
-      </div>
-    ) : null;
+  const canSubmitProfile =
+    (isCreate && canCreate) || (isEdit && canUpdate);
+
+  const footer = showProfileFooter && canSubmitProfile ? (
+    <UserSheetFooter
+      isCreate={isCreate}
+      isEdit={isEdit}
+      isPending={isPending}
+      formId={formId}
+      canCreate={canCreate}
+      canUpdate={canUpdate}
+      canDelete={canDelete}
+      canExport={canExport}
+      canAnonymize={canAnonymize}
+      isSelf={currentUser?.id === user?.id}
+      exportPending={exportUserData.isPending}
+      onClose={() => onOpenChange(false)}
+      onExport={() => void handleExportData()}
+      onAnonymize={() => {
+        setAnonymizeConfirmEmail("");
+        setAnonymizeOpen(true);
+      }}
+      onDelete={() => setDeleteOpen(true)}
+    />
+  ) : isEdit && activeTab === "roles" ? (
+    <div className="flex justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => onOpenChange(false)}>
+        {tCommon("close")}
+      </Button>
+    </div>
+  ) : null;
 
   return (
     <>
       <AdminFormSheet
         open={open}
         onOpenChange={onOpenChange}
-        title={
-          isCreate
-            ? t("createTitle")
-            : (user?.email ?? t("editTitle"))
-        }
+        title={isCreate ? t("createTitle") : (user?.email ?? t("editTitle"))}
         description={
           isCreate
             ? t("createDescription")
@@ -417,59 +305,11 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
         showContentLocale={false}
         footer={footer}>
         {isCreate ? (
-          <Form {...createForm}>
-            <form
-              id={formId}
-              onSubmit={createForm.handleSubmit(onCreateSubmit)}
-              className="space-y-4">
-              <FormField
-                control={createForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{tAuth("email")}</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{tAuth("password")}</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-md border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>{t("activeAccount")}</FormLabel>
-                      <p className="text-xs text-muted-foreground">
-                        {t("activeAccountHint")}
-                      </p>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
+          <UserCreateForm
+            form={createForm}
+            formId={formId}
+            onSubmit={onCreateSubmit}
+          />
         ) : (
           <Tabs
             value={activeTab}
@@ -488,148 +328,42 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="profile" className="mt-4">
-              <Form {...editForm}>
-                <form
-                  id={formId}
-                  onSubmit={editForm.handleSubmit(onEditSubmit)}
-                  className="space-y-4">
-                  <FormItem>
-                    <FormLabel>{tAuth("email")}</FormLabel>
-                    <Input value={user?.email ?? ""} disabled readOnly />
-                  </FormItem>
-                  <FormField
-                    control={editForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("newPasswordOptional")}</FormLabel>
-                        <FormControl>
-                          <Input type="password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={editForm.control}
-                    name="isActive"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-md border p-3">
-                        <div className="space-y-0.5">
-                          <FormLabel>{t("activeAccount")}</FormLabel>
-                          <p className="text-xs text-muted-foreground">
-                            {t("activeAccountHint")}
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
+              <UserEditProfileForm
+                form={editForm}
+                formId={formId}
+                email={user?.email ?? ""}
+                onSubmit={onEditSubmit}
+              />
             </TabsContent>
-            <TabsContent value="roles" className="mt-4 space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm font-medium">{t("currentRoles")}</p>
-                {user && user.roles.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.roles.map((roleName) => {
-                      const roleId = roleNameToId.get(roleName);
-                      return (
-                        <RoleBadge
-                          key={roleName}
-                          name={roleName}
-                          canRemove={canUnassign && roleId !== undefined}
-                          removeAriaLabel={tCommon("removeAriaLabel", {
-                            name: roleName,
-                          })}
-                          onRemove={
-                            roleId !== undefined
-                              ? () =>
-                                  setUnassignTarget({
-                                    roleId,
-                                    roleName,
-                                  })
-                              : undefined
-                          }
-                        />
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {t("emptyRoles")}
-                  </p>
-                )}
-              </div>
-              {canAssign ? (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">{t("addRole")}</p>
-                  <div className="flex gap-2">
-                    <Select
-                      value={selectedRoleId}
-                      onValueChange={(roleId) =>
-                        setRoleSelection({ sheetId, roleId })
-                      }>
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder={t("selectRole")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {assignableRoles.map((role) => (
-                          <SelectItem key={role.id} value={String(role.id)}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      onClick={handleAssignRole}
-                      disabled={!selectedRoleId || assignRole.isPending}>
-                      {assignRole.isPending ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : null}
-                      {tCommon("add")}
-                    </Button>
-                  </div>
-                  {assignableRoles.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      {t("allRolesAssigned")}
-                    </p>
-                  ) : null}
-                </div>
+            <TabsContent value="roles" className="mt-4">
+              {user ? (
+                <UserRolesPanel
+                  user={user}
+                  assignableRoles={assignableRoles}
+                  roleNameToId={roleNameToId}
+                  canAssign={canAssign}
+                  canUnassign={canUnassign}
+                  selectedRoleId={selectedRoleId}
+                  assignPending={assignRole.isPending}
+                  onSelectRole={(roleId) =>
+                    setRoleSelection({ sheetId, roleId })
+                  }
+                  onAssign={() => void handleAssignRole()}
+                  onUnassign={setUnassignTarget}
+                />
               ) : null}
             </TabsContent>
           </Tabs>
         )}
       </AdminFormSheet>
 
-      <AlertDialog
+      <UnassignRoleDialog
         open={unassignTarget !== null}
-        onOpenChange={(dialogOpen) => !dialogOpen && setUnassignTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("removeRoleTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("removeRoleDescription", {
-                roleName: unassignTarget?.roleName ?? "",
-                email: user?.email ?? "",
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleUnassignRole}>
-              {tCommon("remove")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        roleName={unassignTarget?.roleName ?? ""}
+        email={user?.email ?? ""}
+        onOpenChange={(dialogOpen) => !dialogOpen && setUnassignTarget(null)}
+        onConfirm={() => void handleUnassignRole()}
+      />
 
       <UserDeleteDialog
         user={user}
@@ -638,51 +372,15 @@ export function UserManageSheet({ state, onOpenChange }: UserManageSheetProps) {
         onDeleted={() => onOpenChange(false)}
       />
 
-      <AlertDialog
+      <AnonymizeUserDialog
         open={anonymizeOpen}
-        onOpenChange={(dialogOpen) => {
-          setAnonymizeOpen(dialogOpen);
-          if (!dialogOpen) setAnonymizeConfirmEmail("");
-        }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("anonymizeTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("anonymizeDescription", { email: user?.email ?? "" })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-2">
-            <label
-              htmlFor="anonymize-confirm-email"
-              className="text-sm font-medium">
-              {t("anonymizeConfirmLabel")}
-            </label>
-            <Input
-              id="anonymize-confirm-email"
-              value={anonymizeConfirmEmail}
-              onChange={(event) => setAnonymizeConfirmEmail(event.target.value)}
-              placeholder={user?.email ?? ""}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={anonymizeUser.isPending}>
-              {tCommon("cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleAnonymize}
-              disabled={
-                anonymizeUser.isPending ||
-                anonymizeConfirmEmail.trim() !== (user?.email ?? "")
-              }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              {anonymizeUser.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
-              {t("anonymizePii")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        email={user?.email ?? ""}
+        confirmEmail={anonymizeConfirmEmail}
+        pending={anonymizeUser.isPending}
+        onConfirmEmailChange={setAnonymizeConfirmEmail}
+        onOpenChange={setAnonymizeOpen}
+        onConfirm={() => void handleAnonymize()}
+      />
     </>
   );
 }

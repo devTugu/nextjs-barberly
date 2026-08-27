@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { RequirePermission } from '@/features/auth';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
-import { AdminStaffPanel } from '@/widgets/admin-staff/admin-staff-panel';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
+import { AdminStaffPanel } from '@/widgets/admin-staff';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 export default async function AdminStaffPage() {

@@ -12,3 +12,4 @@ export type {
   UpdateServiceFormValues,
 } from './lib/service.schema';
 export * from './api';
+export { useServiceColumns } from './ui/service-columns';

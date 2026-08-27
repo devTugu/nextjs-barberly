@@ -10,7 +10,7 @@ import type {
   UpdateRoleInput,
 } from '../types/role';
 import { roleKeys } from './queries';
-import { userKeys } from '@/entities/user/api/queries';
+import { userKeys } from '@/entities/user';
 
 export const useCreateRole = () => {
   const queryClient = useQueryClient();

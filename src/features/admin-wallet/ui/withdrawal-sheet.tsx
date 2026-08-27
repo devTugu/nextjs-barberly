@@ -12,11 +12,11 @@ import {
   useRequestWithdrawal,
   useWalletBalance,
 } from '@/entities/wallet';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { AdminFormSheet } from '@/widgets/admin-form-sheet';
+import { AdminFormSheet } from '@/shared/ui/admin-form-sheet';
 import { Button } from '@/shared/ui/button';
 import {
   Form,

@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useMyTenant, useUpdateMyTenant } from '@/entities/tenant';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';

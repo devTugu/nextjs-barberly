@@ -4,16 +4,14 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useBookings, type BookingOutput } from '@/entities/booking';
+import { useBookings } from '@/entities/booking';
 import { useTenantDashboardStats } from '@/entities/dashboard';
 import { useStaffList } from '@/entities/staff';
 import { useMyTenant } from '@/entities/tenant';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { useMe } from '@/entities/user';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { cn } from '@/shared/lib/utils';
-import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { useOnlineStatus } from '@/shared/hooks/use-online-status';
@@ -28,274 +26,17 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { AdminMobileDayCalendar } from './admin-mobile-day-calendar';
-import { CalendarWorkingHoursOverlay } from './calendar-working-hours-overlay';
+import { CalendarDayTimeline } from './calendar-day-timeline';
+import { CalendarWeekGrid } from './calendar-week-grid';
+import { type CalendarView, zonedTimeToUtc } from './calendar-layout';
 import {
-  DAY_END_HOUR,
-  DAY_END_MINUTES,
-  DAY_START_HOUR,
-  DAY_START_MINUTES,
-  DAY_TIMELINE_HEIGHT_PX,
-  GRID_HOURS,
-  HOUR_HEIGHT_PX,
-  MINUTE_HEIGHT_PX,
-  staffLaneColor,
-  type CalendarView,
-  zonedTimeToUtc,
-} from './calendar-layout';
-
-function getDateKeyInTimezone(date: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone }).format(date);
-}
-
-function addDaysToDateKey(dateKey: string, days: number): string {
-  const [year, month, day] = dateKey.split('-').map(Number);
-  const next = new Date(Date.UTC(year, month - 1, day + days));
-  return next.toISOString().slice(0, 10);
-}
-
-function getZonedDayRange(
-  dateKey: string,
-  timeZone: string,
-): { fromUtc: string; toUtc: string } {
-  const fromUtc = zonedTimeToUtc(dateKey, 0, 0, timeZone).toISOString();
-  const toUtc = zonedTimeToUtc(
-    addDaysToDateKey(dateKey, 1),
-    0,
-    0,
-    timeZone,
-  ).toISOString();
-  return { fromUtc, toUtc };
-}
-
-function getWeekDateKeys(dateKey: string, timeZone: string): string[] {
-  const start = zonedTimeToUtc(dateKey, 12, 0, timeZone);
-  const weekday = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    weekday: 'short',
-  }).format(start);
-  const weekdayIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
-    weekday,
-  );
-  const mondayOffset = weekdayIndex === 0 ? -6 : 1 - weekdayIndex;
-  const mondayKey = addDaysToDateKey(dateKey, mondayOffset);
-  return Array.from({ length: 7 }, (_, index) =>
-    addDaysToDateKey(mondayKey, index),
-  );
-}
-
-function getZonedWeekRange(
-  dateKey: string,
-  timeZone: string,
-): { fromUtc: string; toUtc: string } {
-  const weekKeys = getWeekDateKeys(dateKey, timeZone);
-  const fromUtc = zonedTimeToUtc(weekKeys[0], 0, 0, timeZone).toISOString();
-  const toUtc = zonedTimeToUtc(
-    addDaysToDateKey(weekKeys[6], 1),
-    0,
-    0,
-    timeZone,
-  ).toISOString();
-  return { fromUtc, toUtc };
-}
-
-function shiftDateKey(
-  dateKey: string,
-  view: CalendarView,
-  direction: -1 | 1,
-): string {
-  const delta = view === 'day' ? direction : direction * 7;
-  return addDaysToDateKey(dateKey, delta);
-}
-
-function getMinuteOfDayInTimezone(iso: string, timeZone: string): number {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(new Date(iso)).map((part) => [part.type, part.value]),
-  );
-  return Number(parts.hour) * 60 + Number(parts.minute);
-}
-
-function formatHourLabel(hour: number, timeZone: string): string {
-  const date = zonedTimeToUtc('2000-01-01', hour, 0, timeZone);
-  return new Intl.DateTimeFormat(undefined, {
-    timeZone,
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(date);
-}
-
-function bookingStatusVariant(
-  status: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-  if (status === 'confirmed') return 'default';
-  if (status === 'completed') return 'secondary';
-  if (status === 'pending_payment') return 'outline';
-  return 'destructive';
-}
-
-function groupBookingsByDate(
-  bookings: BookingOutput[],
-  timeZone: string,
-  weekKeys?: string[],
-): Map<string, BookingOutput[]> {
-  const grouped = new Map<string, BookingOutput[]>();
-  bookings.forEach((booking) => {
-    const dateKey = getDateKeyInTimezone(new Date(booking.startAtUtc), timeZone);
-    if (weekKeys && !weekKeys.includes(dateKey)) return;
-    const list = grouped.get(dateKey) ?? [];
-    list.push(booking);
-    grouped.set(dateKey, list);
-  });
-  return grouped;
-}
-
-type TimelinePlacement = {
-  booking: BookingOutput;
-  top: number;
-  height: number;
-  column: number;
-  totalColumns: number;
-};
-
-function layoutOverlappingBookings(
-  bookings: BookingOutput[],
-  timeZone: string,
-): TimelinePlacement[] {
-  type TimedBooking = {
-    booking: BookingOutput;
-    top: number;
-    height: number;
-    start: number;
-    end: number;
-  };
-
-  const timed = bookings
-    .map((booking) => {
-      const style = getDayTimelineStyle(booking, timeZone);
-      if (!style) return null;
-      return {
-        booking,
-        ...style,
-        start: getMinuteOfDayInTimezone(booking.startAtUtc, timeZone),
-        end: getMinuteOfDayInTimezone(booking.endAtUtc, timeZone),
-      };
-    })
-    .filter((item): item is TimedBooking => item !== null)
-    .sort((a, b) => a.start - b.start || a.end - b.end);
-
-  const placements: TimelinePlacement[] = [];
-  let cluster: TimedBooking[] = [];
-  let clusterEnd = -1;
-
-  const flushCluster = () => {
-    if (cluster.length === 0) return;
-
-    const columnEnds: number[] = [];
-    const clusterPlacements: Array<{ item: TimedBooking; column: number }> = [];
-
-    cluster.forEach((item) => {
-      let column = columnEnds.findIndex((end) => end <= item.start);
-      if (column === -1) {
-        column = columnEnds.length;
-        columnEnds.push(item.end);
-      } else {
-        columnEnds[column] = item.end;
-      }
-      clusterPlacements.push({ item, column });
-    });
-
-    const totalColumns = columnEnds.length;
-    clusterPlacements.forEach(({ item, column }) => {
-      placements.push({
-        booking: item.booking,
-        top: item.top,
-        height: item.height,
-        column,
-        totalColumns,
-      });
-    });
-
-    cluster = [];
-    clusterEnd = -1;
-  };
-
-  timed.forEach((item) => {
-    if (cluster.length > 0 && item.start >= clusterEnd) {
-      flushCluster();
-    }
-    cluster.push(item);
-    clusterEnd = Math.max(clusterEnd, item.end);
-  });
-  flushCluster();
-
-  return placements;
-}
-
-function getDayTimelineStyle(
-  booking: BookingOutput,
-  timeZone: string,
-): { top: number; height: number } | null {
-  const startMinutes = getMinuteOfDayInTimezone(booking.startAtUtc, timeZone);
-  const endMinutes = getMinuteOfDayInTimezone(booking.endAtUtc, timeZone);
-  const visibleStart = Math.max(startMinutes, DAY_START_MINUTES);
-  const visibleEnd = Math.min(endMinutes, DAY_END_MINUTES);
-
-  if (visibleEnd <= DAY_START_MINUTES || visibleStart >= DAY_END_MINUTES) {
-    return null;
-  }
-
-  return {
-    top: (visibleStart - DAY_START_MINUTES) * MINUTE_HEIGHT_PX,
-    height: Math.max((visibleEnd - visibleStart) * MINUTE_HEIGHT_PX, 44),
-  };
-}
-
-function BookingCell({
-  booking,
-  timeZone,
-  tStatus,
-  className,
-}: {
-  booking: BookingOutput;
-  timeZone: string;
-  tStatus: (key: string) => string;
-  className?: string;
-}) {
-  return (
-    <Button
-      variant="outline"
-      className={cn(
-        'min-h-11 h-auto w-full justify-start border-l-4 px-2 py-2 text-left',
-        className,
-      )}
-      style={{ borderLeftColor: staffLaneColor(booking.staffId) }}
-      asChild
-    >
-      <Link href={ROUTES.adminBooking(booking.id)}>
-        <div className="space-y-1">
-          <p className="text-xs font-medium">
-            {new Intl.DateTimeFormat(undefined, {
-              timeZone,
-              hour: '2-digit',
-              minute: '2-digit',
-            }).format(new Date(booking.startAtUtc))}
-            {' · '}#{booking.id}
-          </p>
-          <Badge
-            variant={bookingStatusVariant(booking.status)}
-            className="text-xs"
-          >
-            {tStatus(booking.status)}
-          </Badge>
-        </div>
-      </Link>
-    </Button>
-  );
-}
+  getDateKeyInTimezone,
+  getWeekDateKeys,
+  getZonedDayRange,
+  getZonedWeekRange,
+  groupBookingsByDate,
+  shiftDateKey,
+} from './calendar-time';
 
 export function AdminCalendarPanel() {
   const t = useTranslations('entities.bookings');
@@ -533,167 +274,22 @@ export function AdminCalendarPanel() {
         {!isLoading && items.length > 0 ? (
           <div className="overflow-x-auto">
             {view === 'day' ? (
-              <div className="min-w-[280px] rounded-md border">
-                <div
-                  className="relative grid grid-cols-[4rem_1fr]"
-                  style={{ height: DAY_TIMELINE_HEIGHT_PX }}
-                >
-                  <div className="relative">
-                    {GRID_HOURS.map((hour, index) => (
-                      <span
-                        key={hour}
-                        className="text-muted-foreground absolute right-2 -translate-y-1/2 text-xs font-medium"
-                        style={{
-                          top: Math.min(
-                            index * HOUR_HEIGHT_PX,
-                            DAY_TIMELINE_HEIGHT_PX,
-                          ),
-                        }}
-                      >
-                        {formatHourLabel(hour, timeZone)}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="relative border-l">
-                    {GRID_HOURS.map((hour, index) => (
-                      <div
-                        key={hour}
-                        className="absolute inset-x-0 border-t"
-                        style={{
-                          top: Math.min(
-                            index * HOUR_HEIGHT_PX,
-                            DAY_TIMELINE_HEIGHT_PX,
-                          ),
-                        }}
-                      />
-                    ))}
-                    {effectiveStaffFilter !== 'all' ? (
-                      <CalendarWorkingHoursOverlay
-                        staffId={Number(effectiveStaffFilter)}
-                        localDate={cursorDateKey}
-                        timeZone={timeZone}
-                        heightPx={DAY_TIMELINE_HEIGHT_PX}
-                      />
-                    ) : null}
-                    {items.map((booking) => {
-                      const style = getDayTimelineStyle(booking, timeZone);
-                      if (!style) return null;
-                      return (
-                        <div
-                          key={booking.id}
-                          className="absolute left-2 right-2"
-                          style={style}
-                        >
-                          <BookingCell
-                            booking={booking}
-                            timeZone={timeZone}
-                            tStatus={tStatus}
-                            className="h-full overflow-hidden"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+              <CalendarDayTimeline
+                bookings={items}
+                timeZone={timeZone}
+                dateKey={cursorDateKey}
+                staffFilterId={effectiveStaffFilter}
+                tStatus={tStatus}
+              />
             ) : (
-              <div className="min-w-[640px]">
-                <div className="grid grid-cols-[4rem_repeat(7,minmax(0,1fr))] gap-1 border-b pb-2">
-                  <div />
-                  {weekKeys!.map((dateKey) => (
-                    <div
-                      key={dateKey}
-                      className={cn(
-                        'text-center text-xs font-medium',
-                        dateKey === cursorDateKey && 'text-primary',
-                      )}
-                    >
-                      {new Intl.DateTimeFormat(undefined, {
-                        timeZone,
-                        weekday: 'short',
-                        day: 'numeric',
-                      }).format(zonedTimeToUtc(dateKey, 12, 0, timeZone))}
-                    </div>
-                  ))}
-                </div>
-                <div
-                  className="grid grid-cols-[4rem_repeat(7,minmax(0,1fr))]"
-                  style={{ height: DAY_TIMELINE_HEIGHT_PX }}
-                >
-                  <div className="relative">
-                    {GRID_HOURS.map((hour, index) => (
-                      <span
-                        key={hour}
-                        className="text-muted-foreground absolute right-2 -translate-y-1/2 text-xs font-medium"
-                        style={{
-                          top: Math.min(
-                            index * HOUR_HEIGHT_PX,
-                            DAY_TIMELINE_HEIGHT_PX,
-                          ),
-                        }}
-                      >
-                        {formatHourLabel(hour, timeZone)}
-                      </span>
-                    ))}
-                  </div>
-                  {weekKeys!.map((dateKey) => {
-                    const dayBookings = grouped.get(dateKey) ?? [];
-                    const placements = layoutOverlappingBookings(
-                      dayBookings,
-                      timeZone,
-                    );
-                    return (
-                      <div
-                        key={dateKey}
-                        className={cn(
-                          'relative border-l',
-                          dateKey === cursorDateKey && 'bg-primary/5',
-                        )}
-                      >
-                        {GRID_HOURS.map((hour, index) => (
-                          <div
-                            key={hour}
-                            className="absolute inset-x-0 border-t"
-                            style={{
-                              top: Math.min(
-                                index * HOUR_HEIGHT_PX,
-                                DAY_TIMELINE_HEIGHT_PX,
-                              ),
-                            }}
-                          />
-                        ))}
-                        {effectiveStaffFilter !== 'all' ? (
-                          <CalendarWorkingHoursOverlay
-                            staffId={Number(effectiveStaffFilter)}
-                            localDate={dateKey}
-                            timeZone={timeZone}
-                            heightPx={DAY_TIMELINE_HEIGHT_PX}
-                          />
-                        ) : null}
-                        {placements.map((placement) => (
-                          <div
-                            key={placement.booking.id}
-                            className="absolute px-0.5"
-                            style={{
-                              top: placement.top,
-                              height: placement.height,
-                              left: `${(placement.column / placement.totalColumns) * 100}%`,
-                              width: `${100 / placement.totalColumns}%`,
-                            }}
-                          >
-                            <BookingCell
-                              booking={placement.booking}
-                              timeZone={timeZone}
-                              tStatus={tStatus}
-                              className="h-full overflow-hidden"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <CalendarWeekGrid
+                weekKeys={weekKeys ?? []}
+                grouped={grouped}
+                cursorDateKey={cursorDateKey}
+                timeZone={timeZone}
+                staffFilterId={effectiveStaffFilter}
+                tStatus={tStatus}
+              />
             )}
           </div>
         ) : null}

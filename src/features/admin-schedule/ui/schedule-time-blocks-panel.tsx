@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
@@ -12,8 +12,8 @@ import {
   useDeleteStaffTimeBlock,
   useStaffTimeBlocks,
 } from '@/entities/schedule';
-import { ScheduleDeleteButton } from '@/features/admin-schedule/ui/schedule-delete-button';
-import { useAuthPermissions } from '@/features/auth';
+import { ScheduleDeleteButton } from './schedule-delete-button';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';

@@ -12,7 +12,7 @@ import {
   useTenantContract,
   useUpsertTenantContract,
 } from '@/entities/tenant';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { Button } from '@/shared/ui/button';

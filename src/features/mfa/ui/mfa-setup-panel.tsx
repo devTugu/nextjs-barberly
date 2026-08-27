@@ -4,7 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Check, Copy, ShieldCheck, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
-import { parseOtpAuthUrl } from '@/features/mfa/lib/parse-otpauth-url';
+import { parseOtpAuthUrl } from '../lib/parse-otpauth-url';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';

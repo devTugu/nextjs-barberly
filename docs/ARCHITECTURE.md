@@ -6,14 +6,23 @@ Next.js 16 app using **Feature-Sliced Design (FSD)** with a **Backend-for-Fronte
 
 ```
 app/           # Next.js App Router (routes, layouts, API routes)
-widgets/       # Composed UI blocks (sidebar, marketing sections)
-features/      # User interactions (auth, brands CRUD, MFA)
-entities/      # Business models + API clients
-shared/        # Config, UI kit, i18n, utilities
-processes/     # App-wide providers, proxy handler
+widgets/       # Composed UI blocks (sidebar, landing, calendar, login)
+features/      # User interactions (CRUD tables, booking wizard, MFA)
+entities/      # Business models, API clients, session, entity UI
+shared/        # Config, UI kit, i18n, utilities (segmented, not sliced)
+processes/     # App-wide proxy handler
 ```
 
 **Import rule:** upper layers import from lower layers only (`app` → `widgets` → `features` → `entities` → `shared`).
+
+- Features never import widgets or other features.
+- Shared never imports entities, features, or widgets.
+- Cross-slice imports on `widgets`, `features`, and `entities` go through that slice's `index.ts` public API.
+- Auth session state lives in `entities/session` so every feature can read it without importing `features/auth`.
+- Generic table/sheet chrome lives in `shared/ui`.
+- Login composition lives in `widgets/login-form`.
+
+ESLint (`eslint-plugin-boundaries`) enforces the layer graph and slice public APIs.
 
 ## Request flow
 
@@ -53,7 +62,8 @@ sequenceDiagram
 | Platform admin | `app/(platform)/` |
 | Customer portal | `app/user/`, `app/book/` |
 | Auth routes | `app/api/auth/` |
-| Public API client | `src/entities/public-api/` |
+| Public API client | `src/shared/lib/public-api.ts` |
+| Session | `src/entities/session/` |
 | Proxy redirects | `src/processes/proxy.ts` |
 | Route constants | `src/shared/config/routes.ts` |
 

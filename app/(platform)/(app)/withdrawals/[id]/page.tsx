@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { WithdrawalDetail } from '@/features/withdrawals/ui/withdrawal-detail';
+import { WithdrawalDetail } from '@/features/withdrawals';
 import { RequirePermission } from '@/features/auth';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 

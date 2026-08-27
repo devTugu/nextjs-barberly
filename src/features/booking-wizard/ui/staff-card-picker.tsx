@@ -3,7 +3,7 @@
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
-import { getInitials } from '../lib/booking-format';
+import { getInitials } from '@/entities/booking';
 
 export const ANY_STAFF_ID = 0;
 

@@ -9,8 +9,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { TenantLandingContent } from '@/entities/tenant/types/landing-content';
-import { CustomerBranchPicker } from '@/features/user-portal/ui/customer-branch-picker';
+import type { TenantLandingContent } from '@/entities/tenant';
+import { CustomerBranchPicker } from '@/features/user-portal';
 import { ROUTES } from '@/shared/config/routes';
 import { brandPrimaryButtonClass } from '@/shared/lib/brand-styles';
 import { cn } from '@/shared/lib/utils';

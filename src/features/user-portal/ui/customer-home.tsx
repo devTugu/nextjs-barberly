@@ -6,11 +6,11 @@ import { useTranslations } from 'next-intl';
 import {
   useCancelPreview,
   useReschedulePreview,
-} from '@/entities/booking/api/public-booking';
+} from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
 import { brandPrimaryButtonClass } from '@/shared/lib/brand-styles';
 import { cn } from '@/shared/lib/utils';
-import { getInitials } from '@/features/booking-wizard/lib/booking-format';
+import { getInitials } from '@/entities/booking';
 import { Button } from '@/shared/ui/button';
 import { BookingStatusBadge } from './booking-status-badge';
 

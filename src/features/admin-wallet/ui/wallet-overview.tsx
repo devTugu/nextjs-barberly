@@ -11,8 +11,8 @@ import {
   useWalletWithdrawals,
   type WalletWithdrawalRequest,
 } from '@/entities/wallet';
-import { useWalletTransactionColumns } from '@/entities/wallet/ui/wallet-columns';
-import { useAuthPermissions } from '@/features/auth';
+import { useWalletTransactionColumns } from '@/entities/wallet';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
@@ -21,7 +21,7 @@ import {
   DataTable,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';

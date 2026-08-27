@@ -7,10 +7,10 @@ import {
   loadTenantMarketingContext,
   resolvePlatformLoginUrl,
   tenantExists,
-} from '@/shared/lib/marketing-page-data';
-import { DEFAULT_TENANT_LANDING } from '@/entities/tenant/types/landing-content';
-import { PlatformLandingPage } from '@/widgets/platform-landing/platform-landing-page';
-import { LuxuryTenantLanding } from '@/widgets/tenant-landing/luxury-tenant-landing';
+} from '@/entities/tenant';
+import { DEFAULT_TENANT_LANDING } from '@/entities/tenant';
+import { PlatformLandingPage } from '@/widgets/platform-landing';
+import { LuxuryTenantLanding } from '@/widgets/tenant-landing';
 
 export async function generateMetadata(): Promise<Metadata> {
   const host = (await headers()).get('host') ?? 'localhost:3000';

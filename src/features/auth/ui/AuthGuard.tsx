@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMe } from '@/entities/user';
-import { useAuthStore } from '../model/store';
-import { useAuthPermissions } from '../hooks/use-permissions';
+import { useAuthStore } from '@/entities/session';
+import { useAuthPermissions } from '@/entities/session';
 import { resolveAdminLoginPath } from '@/shared/lib/admin-auth-routes';
 import { redirectToLogin } from '@/shared/lib/clear-client-session';
 import { sessionHint } from '@/shared/lib/session-hint';

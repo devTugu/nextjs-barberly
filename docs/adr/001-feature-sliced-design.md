@@ -6,28 +6,42 @@ Accepted
 
 ## Context
 
-The admin UI has many domains (users, brands, news, navigation). We need scalable folder structure with clear import boundaries.
+The product spans marketing, tenant admin, platform admin, and customer booking. Folder structure must encode dependencies so features cannot reach into composed widgets or other features.
 
 ## Decision
 
-Adopt FSD layers:
+Adopt strict FSD layers:
 
 ```
 app → widgets → features → entities → shared
+processes → shared
 ```
 
-- **entities:** API types, queries, column definitions
-- **features:** CRUD tables, forms, dialogs
-- **widgets:** Sidebar, marketing sections, composed layouts
-- **shared:** UI kit, config, i18n, utilities
+| Layer | Responsibility | Public API |
+|-------|----------------|------------|
+| `app/` | Next.js routes and layouts | n/a |
+| `widgets/` | Composed blocks (shells, login screen, calendar) | `src/widgets/<slice>/index.ts` |
+| `features/` | User interactions (tables, forms, wizards) | `src/features/<slice>/index.ts` |
+| `entities/` | Business models, API clients, entity UI | `src/entities/<slice>/index.ts` |
+| `shared/` | UI kit, config, i18n, utilities | any file (segmented, not sliced) |
+| `processes/` | Proxy / app-wide request guards | any file |
 
-Cross-slice imports use public API (`index.ts` barrels).
+Import rules (enforced by `eslint-plugin-boundaries`):
+
+- Upper layers import lower layers only.
+- Features **cannot** import widgets or other features.
+- Shared **cannot** import entities, features, or widgets.
+- Cross-slice imports on features/entities/widgets go through `index.ts` only. Deep paths such as `@/entities/user/ui/user-columns` are lint errors.
+
+Session identity (`useAuthStore`, `useAuthPermissions`) lives in `entities/session` so every feature can read auth state without importing `features/auth`.
+
+Generic admin chrome (`DataTable`, `AdminFormSheet`, `AdminTableActions`) lives in `shared/ui`.
 
 ## Consequences
 
-**Positive:** Predictable placement for new CMS sections; easy onboarding.
+**Positive:** Slice placement is predictable; ESLint fails inverted dependencies.
 
-**Negative:** More folders than a flat `components/` tree.
+**Negative:** New UI that multiple features need must be pushed down to `shared` or `entities`, not parked in `widgets`.
 
 ## Related
 

@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { RequirePermission } from '@/features/auth';
-import { AdminRentInvoicesPanel } from '@/features/admin-settings/ui/admin-rent-invoices-panel';
+import { AdminRentInvoicesPanel } from '@/features/admin-settings';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 
 export default async function AdminRentInvoicesPage() {
   const t = await getTranslations('adminSettings');

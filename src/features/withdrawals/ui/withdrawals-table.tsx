@@ -14,7 +14,7 @@ import {
   useWithdrawals,
   type WithdrawalBatch,
   type WithdrawalRequest,
-} from '@/entities/withdrawal/api/queries';
+} from '@/entities/withdrawal';
 import { getErrorMessage } from '@/shared/api';
 import { ROUTES } from '@/shared/config/routes';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
@@ -44,7 +44,7 @@ import {
   DataTable,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 
 const STATUS_TABS = ['all', 'pending', 'approved', 'rejected'] as const;
 

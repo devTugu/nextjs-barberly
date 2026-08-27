@@ -7,19 +7,19 @@ import { useRouter } from 'next/navigation';
 import { ExternalLink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useTenants, type Tenant } from '@/entities/tenant';
-import { useTenantColumns } from '@/entities/tenant/ui/tenant-columns';
-import { useAuthPermissions } from '@/features/auth';
+import { useTenantColumns } from '@/entities/tenant';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
 import { tenantAdminUrl } from '@/shared/lib/tenant-url';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
-import { AdminTableActions } from '@/widgets/admin-table-actions';
+import { AdminTableActions } from '@/shared/ui/admin-table-actions';
 import {
   DataTable,
   DataTableToolbar,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Button } from '@/shared/ui/button';
 import { TenantDeleteDialog } from './tenant-delete-dialog';
 
@@ -79,8 +79,8 @@ export function TenantsTable() {
         cell: ({ row }) => (
           <AdminTableActions
             name={row.original.name}
-            updatePermission={PERMISSION_CODES.TENANT_UPDATE}
-            deletePermission={PERMISSION_CODES.TENANT_DELETE}
+            canEdit={can(PERMISSION_CODES.TENANT_UPDATE)}
+            canDelete={can(PERMISSION_CODES.TENANT_DELETE)}
             onEdit={() =>
               router.push(ROUTES.platformTenantEdit(row.original.id))
             }

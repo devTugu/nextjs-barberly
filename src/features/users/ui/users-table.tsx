@@ -3,25 +3,24 @@
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useUsers, type UserOutput } from "@/entities/user";
-import { useUserColumns } from "@/entities/user/ui/user-columns";
-import { useAuthPermissions } from "@/features/auth";
+import { useUserColumns, useUsers, type UserOutput } from "@/entities/user";
+import { useAuthPermissions } from '@/entities/session';
 import {
   PERMISSION_CODES,
   SUPER_ADMIN_ROLE,
 } from "@/shared/config/permissions";
 import { useTableSearchParams } from "@/shared/hooks/use-table-search-params";
-import { AdminTableActions } from "@/widgets/admin-table-actions";
+import { AdminTableActions } from "@/shared/ui/admin-table-actions";
 import {
   DataTable,
   DataTableToolbar,
   DataTableEmpty,
   DataTableQueryState,
-} from "@/widgets/data-table";
+} from "@/shared/ui/data-table";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { UserManageSheet, type UserSheetState } from "./user-manage-sheet";
-import { UserDeleteDialog } from "@/features/users/ui/user-delete-dialog";
+import { UserDeleteDialog } from "./user-delete-dialog";
 
 function ClickableRoleBadges({
   user,
@@ -103,8 +102,8 @@ export function UsersTable() {
         cell: ({ row }) => (
           <AdminTableActions
             name={row.original.email}
-            updatePermission={PERMISSION_CODES.USER_UPDATE}
-            deletePermission={PERMISSION_CODES.USER_DELETE}
+            canEdit={can(PERMISSION_CODES.USER_UPDATE)}
+            canDelete={can(PERMISSION_CODES.USER_DELETE)}
             onEdit={() =>
               setSheetState({
                 mode: "edit",

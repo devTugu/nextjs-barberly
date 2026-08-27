@@ -8,7 +8,7 @@ import {
   useApplyBrandCatalogSync,
 } from '@/entities/dashboard';
 import { useMyTenant } from '@/entities/tenant';
-import { useAuthPermissions } from '@/features/auth';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';

@@ -6,7 +6,7 @@ import { RequirePermission } from '@/features/auth';
 
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 
-import { AdminPageHeader } from '@/widgets/admin-page-header';
+import { AdminPageHeader } from '@/shared/ui/admin-page-header';
 import { ScheduleHub } from '@/widgets/admin-schedule';
 
 import { Skeleton } from '@/shared/ui/skeleton';

@@ -5,13 +5,13 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { Loader2, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { useUploadMedia } from '@/entities/media/api/mutations';
+import { useUploadMedia } from '@/entities/media';
 import { useMyTenant, useUpdateMyTenant } from '@/entities/tenant';
 import {
   DEFAULT_TENANT_LANDING,
   type TenantLandingContent,
-} from '@/entities/tenant/types/landing-content';
-import { useAuthPermissions } from '@/features/auth';
+} from '@/entities/tenant';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';

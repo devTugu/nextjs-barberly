@@ -15,7 +15,7 @@ import {
   DataTableToolbar,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 
 export function AuditLogsTable() {
   const t = useTranslations('entities.auditLogs');

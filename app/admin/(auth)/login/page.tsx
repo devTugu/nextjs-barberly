@@ -1,4 +1,4 @@
-import { AdminTenantLoginShell } from '@/features/admin-auth/ui/admin-tenant-login-shell';
+import { AdminTenantLoginShell } from '@/widgets/admin-auth';
 
 interface PageProps {
   searchParams?: Promise<{ tenant?: string | string[] }>;

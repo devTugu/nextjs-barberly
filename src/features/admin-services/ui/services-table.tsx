@@ -5,19 +5,19 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useServices, type ServiceOutput } from '@/entities/service';
-import { useServiceColumns } from '@/entities/service/ui/service-columns';
-import { useAuthPermissions } from '@/features/auth';
+import { useServiceColumns } from '@/entities/service';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
-import { AdminTableActions } from '@/widgets/admin-table-actions';
+import { AdminTableActions } from '@/shared/ui/admin-table-actions';
 import {
   DataTable,
   DataTableToolbar,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Button } from '@/shared/ui/button';
 import {
   ServiceManageSheet,
@@ -82,8 +82,8 @@ export function ServicesTable() {
         cell: ({ row }) => (
           <AdminTableActions
             name={row.original.name}
-            updatePermission={PERMISSION_CODES.SERVICE_UPDATE}
-            deletePermission={PERMISSION_CODES.SERVICE_DELETE}
+            canEdit={can(PERMISSION_CODES.SERVICE_UPDATE)}
+            canDelete={can(PERMISSION_CODES.SERVICE_DELETE)}
             onEdit={() =>
               setSheetState({ mode: 'edit', service: row.original })
             }

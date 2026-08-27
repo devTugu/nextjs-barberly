@@ -4,17 +4,17 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useStaffList } from '@/entities/staff/api/queries';
+import { useStaffList } from '@/entities/staff';
 import { useStaffShifts } from '@/entities/schedule';
 import { useMe } from '@/entities/user';
-import { useAuthPermissions } from '@/features/auth';
-import { ScheduleDayExceptionsPanel } from '@/features/admin-schedule/ui/schedule-day-exceptions-panel';
-import { ScheduleTimeBlocksPanel } from '@/features/admin-schedule/ui/schedule-time-blocks-panel';
+import { useAuthPermissions } from '@/entities/session';
+import { ScheduleDayExceptionsPanel } from '@/features/admin-schedule';
+import { ScheduleTimeBlocksPanel } from '@/features/admin-schedule';
 import {
   ScheduleTemplatesPanel,
   ScheduleTenantHolidaysPanel,
-} from '@/features/admin-schedule/ui/schedule-tenant-panels';
-import { ScheduleWeeklyEditor } from '@/features/admin-schedule/ui/schedule-weekly-editor';
+} from '@/features/admin-schedule';
+import { ScheduleWeeklyEditor } from '@/features/admin-schedule';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { Button } from '@/shared/ui/button';

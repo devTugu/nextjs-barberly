@@ -4,17 +4,17 @@ import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useRoles, type Role } from '@/entities/role';
-import { useRoleColumns } from '@/entities/role/ui/role-columns';
-import { useAuthPermissions } from '@/features/auth';
+import { useRoleColumns } from '@/entities/role';
+import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { useTableSearchParams } from '@/shared/hooks/use-table-search-params';
-import { AdminTableActions } from '@/widgets/admin-table-actions';
+import { AdminTableActions } from '@/shared/ui/admin-table-actions';
 import {
   DataTable,
   DataTableToolbar,
   DataTableEmpty,
   DataTableQueryState,
-} from '@/widgets/data-table';
+} from '@/shared/ui/data-table';
 import { Button } from '@/shared/ui/button';
 import { RoleManageSheet, type RoleSheetState } from './role-manage-sheet';
 import { RoleDeleteDialog } from './role-delete-dialog';
@@ -39,8 +39,8 @@ export function RolesTable() {
         cell: ({ row }) => (
           <AdminTableActions
             name={row.original.name}
-            updatePermission={PERMISSION_CODES.ROLE_UPDATE}
-            deletePermission={PERMISSION_CODES.ROLE_DELETE}
+            canEdit={can(PERMISSION_CODES.ROLE_UPDATE)}
+            canDelete={can(PERMISSION_CODES.ROLE_DELETE)}
             onEdit={() =>
               setSheetState({ mode: 'edit', role: row.original })
             }
