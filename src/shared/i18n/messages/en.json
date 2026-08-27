@@ -1322,6 +1322,19 @@
     "urlPlaceholder": "https://..."
   },
   "marketing": {
+    "platform": {
+      "brand": "Barberly",
+      "eyebrow": "Barbershop SaaS",
+      "shopsEyebrow": "Live on the platform",
+      "shopsNav": "Shops",
+      "shopsTitle": "Shops running on Barberly",
+      "shopsDescription": "Each tenant has a branded landing page. Open any shop to see theirs.",
+      "visitShop": "Open site",
+      "emptyShops": "Partner shops appear here as they go live.",
+      "featuresEyebrow": "Platform",
+      "benefitsEyebrow": "Why shops switch",
+      "meshLabel": "Animated gradient"
+    },
     "nav": {
       "contact": "Contact",
       "signIn": "Sign in",

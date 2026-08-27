@@ -1325,6 +1325,19 @@
     "urlPlaceholder": "https://..."
   },
   "marketing": {
+    "platform": {
+      "brand": "Barberly",
+      "eyebrow": "Үсчиний газрын SaaS",
+      "shopsEyebrow": "Платформ дээр ажиллаж буй",
+      "shopsNav": "Салонууд",
+      "shopsTitle": "Хамтран ажиллаж буй салонууд",
+      "shopsDescription": "Салон бүр өөрийн брэндийн лендингтэй. Дурын сайтыг нээж үзээрэй.",
+      "visitShop": "Сайт нээх",
+      "emptyShops": "Хамтран ажиллаж буй салонууд энд харагдана.",
+      "featuresEyebrow": "Платформ",
+      "benefitsEyebrow": "Яагаад шилждэг вэ",
+      "meshLabel": "Хөдөлгөөнт градиент"
+    },
     "nav": {
       "contact": "Холбоо барих",
       "signIn": "Нэвтрэх",

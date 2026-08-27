@@ -4,6 +4,7 @@ import { resolveHostContext } from '@/shared/lib/host-context';
 import {
   buildMarketingMetadata,
   loadPlatformLanding,
+  loadPublicShopDirectory,
   loadTenantMarketingContext,
   resolvePlatformLoginUrl,
   tenantExists,
@@ -28,11 +29,15 @@ export default async function HomePage() {
     !(await tenantExists(subdomain));
 
   if (showPlatform) {
-    const content = await loadPlatformLanding();
+    const [content, shops] = await Promise.all([
+      loadPlatformLanding(),
+      loadPublicShopDirectory(host),
+    ]);
     return (
       <PlatformLandingPage
         content={content}
         platformLoginUrl={resolvePlatformLoginUrl(host)}
+        shops={shops}
       />
     );
   }

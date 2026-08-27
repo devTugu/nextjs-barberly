@@ -11,6 +11,7 @@ export const PUBLIC_BFF_ROUTE_DEFINITIONS: Array<{
   { path: '/public/staff-auth/otp/verify', methods: ['POST'] },
   { path: '/public/schedule/summary', methods: ['GET'] },
   { path: '/public/platform/landing', methods: ['GET'] },
+  { path: '/public/platform/tenants', methods: ['GET'] },
   { path: '/public/available-slots', methods: ['GET'] },
   { path: '/public/bookings/lock', methods: ['POST'] },
   { path: '/public/bookings/mine', methods: ['GET'] },

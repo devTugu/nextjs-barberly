@@ -8,6 +8,10 @@ export { GradientMesh } from './gradient-mesh';
 
 export { AnimatedMesh } from './animated-mesh';
 
+export { TiltStage } from './tilt-stage';
+
+export { FilmGrain } from './film-grain';
+
 export { GradientRibbon } from './gradient-ribbon';
 
 export { GridPattern } from './grid-pattern';

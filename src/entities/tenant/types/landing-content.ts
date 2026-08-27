@@ -108,63 +108,63 @@ export const DEFAULT_TENANT_LANDING: TenantLandingContent = {
 
 export const DEFAULT_PLATFORM_LANDING: PlatformLandingContent = {
 
-  heroTitle: 'Barberly — barbershop booking SaaS',
+  heroTitle: 'Үсчин бүрт өөрийн сайт. Платформ нь нэг.',
 
   heroSubtitle:
 
-    'Multi-tenant scheduling, payments, and admin tools built for modern barbershops in Mongolia.',
+    'Цаг захиалга, QPay төлбөр, ажилтны календарь, брэндийн лендинг — орчин үеийн салонд зориулсан SaaS.',
 
-  heroCtaPrimary: 'Platform login',
+  heroCtaPrimary: 'Платформд нэвтрэх',
 
-  heroCtaSecondary: 'See features',
+  heroCtaSecondary: 'Салонуудыг үзэх',
 
   features: [
 
     {
 
-      title: 'Online booking',
+      title: 'Онлайн захиалга',
 
-      description: 'Customers book services and pay online with QPay integration.',
-
-    },
-
-    {
-
-      title: 'Tenant admin',
-
-      description: 'Each shop gets calendar, staff, services, wallet, and branding.',
+      description: 'Үйлчлүүлэгч үйлчилгээ сонгож, QPay-ээр төлөөд цагаа баталгаажуулна.',
 
     },
 
     {
 
-      title: 'Platform control',
+      title: 'Салоны админ',
 
-      description: 'Manage tenants, withdrawals, analytics, and security from one console.',
+      description: 'Календарь, ажилтан, үйлчилгээ, хэтэвч, брэндинг — салон бүрт өөрийн самбар.',
+
+    },
+
+    {
+
+      title: 'Платформ удирдлага',
+
+      description: 'Tenant, татан авалт, аналитик, аюулгүй байдлыг нэг консолоос.',
 
     },
 
   ],
 
-  partnersTitle: 'Trusted partners',
+  partnersTitle: 'Хамтрагчид',
 
-  partners: ['QPay', 'Local barbershops', 'Enterprise salons'],
+  partners: ['QPay', 'Үсчиний газрууд', 'Enterprise салонууд'],
 
   benefits: [
 
     {
 
-      title: 'White-label sites',
+      title: 'White-label сайт',
 
-      description: 'Every tenant gets a branded landing page on their subdomain.',
+      description: 'Салон бүрт өөрийн брэндийн лендинг, өөрийн subdomain дээр.',
 
     },
 
     {
 
-      title: 'Enterprise schedule',
+      title: 'Enterprise хуваарь',
 
-      description: 'Shifts, holidays, templates, and real-time availability.',
+      description: 'Ээлж, амралт, template, бодит цагийн сул цаг.',
 
     },
 

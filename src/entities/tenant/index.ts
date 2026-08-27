@@ -33,3 +33,5 @@ export type {
   PublicTenantSettings,
   TenantMarketingContext,
 } from './lib/marketing-page-data';
+export { loadPublicShopDirectory } from './lib/public-shop-directory';
+export type { PublicShopCard } from './types/public-shop';

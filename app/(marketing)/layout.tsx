@@ -3,5 +3,5 @@ export default function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="min-h-svh bg-black text-white antialiased">{children}</div>;
+  return <div className="min-h-svh antialiased">{children}</div>;
 }
