@@ -55,6 +55,14 @@ function normalizePlatformLanding(
     partners: raw?.partners?.length
       ? raw.partners
       : DEFAULT_PLATFORM_LANDING.partners,
+    testimonials: raw?.testimonials?.length
+      ? raw.testimonials
+      : DEFAULT_PLATFORM_LANDING.testimonials,
+    plans: raw?.plans?.length ? raw.plans : DEFAULT_PLATFORM_LANDING.plans,
+    contact: {
+      ...DEFAULT_PLATFORM_LANDING.contact,
+      ...(raw?.contact ?? {}),
+    },
   };
 }
 

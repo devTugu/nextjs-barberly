@@ -6,6 +6,9 @@ export type {
 export type {
   TenantLandingContent,
   PlatformLandingContent,
+  PlatformTestimonial,
+  PlatformPricePlan,
+  PlatformContactInfo,
 } from './types/landing-content';
 export {
   DEFAULT_TENANT_LANDING,

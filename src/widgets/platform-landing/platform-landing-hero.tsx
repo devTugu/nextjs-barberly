@@ -52,7 +52,7 @@ export function PlatformLandingHero({
               >
                 {content.heroCtaPrimary}
               </MarketingButton>
-              <MarketingButton href="#shops" variant="secondary" showArrow={false}>
+              <MarketingButton href="#partners" variant="secondary" showArrow={false}>
                 {content.heroCtaSecondary}
                 <ArrowRight className="size-3.5" />
               </MarketingButton>
