@@ -84,4 +84,5 @@ Dual installable manifests:
 
 - [Security](SECURITY.md)
 - [ADR 001](adr/001-feature-sliced-design.md)
+- [FSD Playbook](FSD-PLAYBOOK.md) — new slices, import rules, parked polish
 - [ADR 002](adr/002-bff-httponly-auth.md)

@@ -46,3 +46,4 @@ Generic admin chrome (`DataTable`, `AdminFormSheet`, `AdminTableActions`) lives 
 ## Related
 
 - [Architecture](../ARCHITECTURE.md)
+- [FSD Playbook](../FSD-PLAYBOOK.md)

@@ -49,7 +49,7 @@ export function RolesTable() {
         ),
       },
     ],
-    [roleColumns, tCommon],
+    [roleColumns, tCommon, can],
   );
 
   const canCreate = can(PERMISSION_CODES.ROLE_CREATE);

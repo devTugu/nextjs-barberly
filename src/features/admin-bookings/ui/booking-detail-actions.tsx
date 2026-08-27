@@ -29,6 +29,7 @@ interface BookingDetailActionsProps {
 export function BookingDetailActions({ bookingId }: BookingDetailActionsProps) {
   const t = useTranslations('entities.bookings');
   const tenant = useTenantSubdomain();
+  const [nowMs] = useState(() => Date.now());
   const [cancelOpen, setCancelOpen] = useState(false);
   const [completeOpen, setCompleteOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
@@ -84,7 +85,7 @@ export function BookingDetailActions({ bookingId }: BookingDetailActionsProps) {
   const lockExpired =
     booking.status === 'pending_payment' &&
     booking.lockExpiresAt !== null &&
-    new Date(booking.lockExpiresAt).getTime() <= Date.now();
+    new Date(booking.lockExpiresAt).getTime() <= nowMs;
 
   return (
     <Card>

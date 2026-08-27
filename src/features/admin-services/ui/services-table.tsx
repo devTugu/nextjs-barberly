@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
@@ -38,28 +38,26 @@ export function ServicesTable() {
     useTableSearchParams();
   const { data: allServices = [], isLoading, isError, error, refetch } =
     useServices(tenant);
-  const [sheetState, setSheetState] = useState<ServiceSheetState | null>(null);
+  const [localSheet, setLocalSheet] = useState<ServiceSheetState | null>(null);
   const [deleteService, setDeleteService] = useState<ServiceOutput | null>(
     null,
   );
-
-  useEffect(() => {
-    const create = searchParams.get('create');
-    const editId = searchParams.get('edit');
-    if (create === '1') {
-      setSheetState({ mode: 'create' });
+  const urlCreate = searchParams.get('create') === '1';
+  const urlEditId = searchParams.get('edit');
+  const urlSheet = useMemo<ServiceSheetState | null>(() => {
+    if (urlCreate) return { mode: 'create' };
+    if (!urlEditId) return null;
+    const service = allServices.find((item) => item.id === Number(urlEditId));
+    return service ? { mode: 'edit', service } : null;
+  }, [urlCreate, urlEditId, allServices]);
+  const sheetState = localSheet ?? urlSheet;
+  const setSheetState = setLocalSheet;
+  const closeSheet = () => {
+    setLocalSheet(null);
+    if (urlCreate || urlEditId) {
       router.replace(ROUTES.ADMIN_SERVICES);
-      return;
     }
-    if (editId) {
-      const serviceId = Number(editId);
-      const service = allServices.find((item) => item.id === serviceId);
-      if (service) {
-        setSheetState({ mode: 'edit', service });
-        router.replace(ROUTES.ADMIN_SERVICES);
-      }
-    }
-  }, [searchParams, allServices, router]);
+  };
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -92,7 +90,7 @@ export function ServicesTable() {
         ),
       },
     ],
-    [serviceColumns, tCommon],
+    [serviceColumns, tCommon, can],
   );
 
   const canCreate = can(PERMISSION_CODES.SERVICE_CREATE);
@@ -140,7 +138,7 @@ export function ServicesTable() {
         />
         <ServiceManageSheet
           state={sheetState}
-          onOpenChange={(open) => !open && setSheetState(null)}
+          onOpenChange={(open) => !open && closeSheet()}
         />
         <ServiceDeleteDialog
           service={deleteService}

@@ -55,7 +55,7 @@ export function PermissionsTable() {
         ),
       },
     ],
-    [permissionColumns, tCommon],
+    [permissionColumns, tCommon, can],
   );
 
   const canCreate = can(PERMISSION_CODES.PERMISSION_CREATE);

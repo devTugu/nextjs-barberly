@@ -1,6 +1,5 @@
 'use client';
 
-import type { CSSProperties } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useUploadMedia } from '@/entities/media';
-import { useMyTenant, useUpdateMyTenant } from '@/entities/tenant';
+import { useMyTenant, useUpdateMyTenant, type Tenant } from '@/entities/tenant';
 import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
@@ -29,6 +28,7 @@ import {
 import { ColorPickerField } from '@/shared/ui/form-fields';
 import { Input } from '@/shared/ui/input';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { AdminBrandingPreview } from './admin-branding-preview';
 import { InheritOverrideToggle } from './inherit-override-toggle';
 
 const brandingSchema = z.object({
@@ -51,35 +51,40 @@ const brandingSchema = z.object({
 type BrandingFormValues = z.infer<typeof brandingSchema>;
 
 export function AdminBrandingForm() {
+  const tenant = useTenantSubdomain();
+  const { data, isLoading } = useMyTenant(tenant);
+  if (isLoading) {
+    return <Skeleton className="h-64 w-full max-w-lg" />;
+  }
+  if (!data) return null;
+  return <AdminBrandingFormLoaded key={data.id} data={data} tenant={tenant} />;
+}
+
+function AdminBrandingFormLoaded({
+  data,
+  tenant,
+}: {
+  data: Tenant;
+  tenant: string;
+}) {
   const t = useTranslations('adminSettings');
   const tCommon = useTranslations('common');
-  const tenant = useTenantSubdomain();
   const { can } = useAuthPermissions();
-  const { data, isLoading } = useMyTenant(tenant);
   const updateTenant = useUpdateMyTenant(tenant);
   const uploadMedia = useUploadMedia();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
-  const isChild = Boolean(data?.inheritance?.isChild);
-  const [inheritLogo, setInheritLogo] = useState(true);
-  const [inheritColor, setInheritColor] = useState(true);
+  const isChild = Boolean(data.inheritance?.isChild);
+  const own = data.inheritance?.own;
+  const logoInherited = isChild && own?.logoUrl == null;
+  const colorInherited = isChild && own?.brandColor == null;
+  const [inheritLogo, setInheritLogo] = useState(logoInherited);
+  const [inheritColor, setInheritColor] = useState(colorInherited);
 
   const form = useForm<BrandingFormValues>({
     resolver: zodResolver(brandingSchema),
-    defaultValues: { logoUrl: '', bannerUrl: '', brandColor: '' },
-  });
-
-  const previewValues = form.watch();
-
-  useEffect(() => {
-    if (!data) return;
-    const own = data.inheritance?.own;
-    const logoInherited = isChild && own?.logoUrl == null;
-    const colorInherited = isChild && own?.brandColor == null;
-    setInheritLogo(logoInherited);
-    setInheritColor(colorInherited);
-    form.reset({
+    defaultValues: {
       logoUrl: logoInherited
         ? (data.settings.logoUrl ?? '')
         : (own?.logoUrl ?? data.settings.logoUrl ?? ''),
@@ -87,9 +92,14 @@ export function AdminBrandingForm() {
       brandColor: colorInherited
         ? (data.settings.brandColor ?? '')
         : (own?.brandColor ?? data.settings.brandColor ?? ''),
-    });
-    applyBrandPrimary(data.settings.brandColor ?? '');
-  }, [data, form, isChild]);
+    },
+  });
+
+  const previewValues = form.watch();
+
+  useEffect(() => {
+    applyBrandPrimary(previewValues.brandColor ?? data.settings.brandColor ?? '');
+  }, [previewValues.brandColor, data.settings.brandColor]);
 
   const canSubmit =
     can(PERMISSION_CODES.TENANT_SETTINGS_UPDATE) &&
@@ -129,10 +139,6 @@ export function AdminBrandingForm() {
       toast.error(getErrorMessage(err));
     }
   };
-
-  if (isLoading) {
-    return <Skeleton className="h-64 w-full max-w-lg" />;
-  }
 
   return (
     <div className="grid max-w-4xl gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -275,54 +281,10 @@ export function AdminBrandingForm() {
         </CardContent>
       </Card>
 
-      <Card className="h-fit">
-        <CardHeader>
-          <CardTitle>{t('brandingPreviewTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div
-            className="overflow-hidden rounded-lg border"
-            style={
-              previewValues.brandColor
-                ? ({
-                    '--brand-primary': previewValues.brandColor,
-                  } as CSSProperties)
-                : undefined
-            }
-          >
-            {previewValues.bannerUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={previewValues.bannerUrl}
-                alt=""
-                className="h-24 w-full object-cover"
-              />
-            ) : (
-              <div className="bg-muted h-24 w-full" />
-            )}
-            <div className="space-y-3 p-4 text-center">
-              {previewValues.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={previewValues.logoUrl}
-                  alt=""
-                  className="mx-auto size-14 rounded-xl object-cover"
-                />
-              ) : (
-                <div className="bg-muted mx-auto size-14 rounded-xl" />
-              )}
-              <p className="font-semibold">{data?.name ?? tenant}</p>
-              <div
-                className="mx-auto h-9 w-full max-w-[180px] rounded-md bg-[var(--brand-primary,hsl(var(--primary)))]"
-                aria-hidden
-              />
-            </div>
-          </div>
-          <p className="text-muted-foreground text-xs">
-            {t('brandingPreviewHint')}
-          </p>
-        </CardContent>
-      </Card>
+      <AdminBrandingPreview
+        values={previewValues}
+        name={data.name ?? tenant}
+      />
     </div>
   );
 }

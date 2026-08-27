@@ -88,8 +88,20 @@ export function TenantLandingShell({ children }: TenantLandingShellProps) {
   }, [tenant]);
 
   useEffect(() => {
-    void refreshSession();
-  }, [refreshSession]);
+    let cancelled = false;
+    void fetchCustomerSession(tenant)
+      .then((next) => {
+        if (cancelled) return;
+        setSession(next);
+        setSessionLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setSessionLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tenant]);
 
   const navigateToBook = useCallback(
     async (path: string) => {

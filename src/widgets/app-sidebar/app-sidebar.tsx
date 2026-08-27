@@ -136,7 +136,7 @@ export function AppSidebar() {
           ? { ...item, badgeCount: pendingWithdrawals.total }
           : item,
       ),
-    [pendingWithdrawals?.total],
+    [pendingWithdrawals],
   );
 
   return (

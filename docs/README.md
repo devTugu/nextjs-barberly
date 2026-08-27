@@ -8,6 +8,7 @@ Multi-brand RE Admin + Marketing site (v3.0.0). Start here.
 |-------|---------|
 | [Getting Started](GETTING-STARTED.md) | Local setup with paired backend |
 | [Architecture](ARCHITECTURE.md) | FSD layers and BFF pattern |
+| [FSD Playbook](FSD-PLAYBOOK.md) | How to add slices; parked follow-ups |
 | [Site Guide](SITE-GUIDE.md) | Marketing routes, home sections, redirects |
 | [Admin Guide](ADMIN-GUIDE.md) | Dashboard CRUD and permissions |
 | [Security](SECURITY.md) | BFF, httpOnly cookies, CSRF |

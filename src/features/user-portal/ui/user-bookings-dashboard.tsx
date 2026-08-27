@@ -35,18 +35,22 @@ const TERMINAL = [
 ];
 
 export function UserBookingsDashboard() {
+  const tenant = useTenantSubdomain();
+  return <UserBookingsDashboardInner key={tenant} tenant={tenant} />;
+}
+
+function UserBookingsDashboardInner({ tenant }: { tenant: string }) {
   const t = useTranslations('userPortal');
   const tShell = useTranslations('customerShell');
   const locale = useLocale();
-  const tenant = useTenantSubdomain();
   const [items, setItems] = useState<BookingItem[]>([]);
   const [customerName, setCustomerName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [nowMs] = useState(() => Date.now());
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
     Promise.all([
       publicGet<{ items: BookingItem[] }>('/bookings/mine', tenant).catch(() => ({
@@ -73,7 +77,7 @@ export function UserBookingsDashboard() {
     };
   }, [tenant]);
 
-  const now = Date.now();
+  const now = nowMs;
   const upcoming = items.filter(
     (b) =>
       new Date(b.startAtUtc).getTime() >= now && !TERMINAL.includes(b.status),

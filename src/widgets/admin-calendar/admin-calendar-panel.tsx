@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useBookings } from '@/entities/booking';
 import { useTenantDashboardStats } from '@/entities/dashboard';
@@ -13,21 +13,14 @@ import { useMe } from '@/entities/user';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent } from '@/shared/ui/card';
 import { useOnlineStatus } from '@/shared/hooks/use-online-status';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { PageEmpty, PageLoading } from '@/shared/ui/page-states';
-import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
 import { AdminMobileDayCalendar } from './admin-mobile-day-calendar';
 import { CalendarDayTimeline } from './calendar-day-timeline';
 import { CalendarWeekGrid } from './calendar-week-grid';
+import { CalendarPanelToolbar } from './calendar-panel-toolbar';
 import { type CalendarView, zonedTimeToUtc } from './calendar-layout';
 import {
   getDateKeyInTimezone,
@@ -50,21 +43,16 @@ export function AdminCalendarPanel() {
   const [staffFilterId, setStaffFilterId] = useState<string>('all');
   const timeZone = tenantData?.timezone ?? 'UTC';
   const [view, setView] = useState<CalendarView>('day');
-  const [cursorDateKey, setCursorDateKey] = useState(() =>
-    getDateKeyInTimezone(new Date(), 'UTC'),
-  );
-
-  useEffect(() => {
-    if (tenantData?.timezone) {
-      setCursorDateKey(getDateKeyInTimezone(new Date(), tenantData.timezone));
-    }
-  }, [tenantData?.timezone]);
-
-  useEffect(() => {
-    if (isStaff && scopedStaffId) {
-      setStaffFilterId(String(scopedStaffId));
-    }
-  }, [isStaff, scopedStaffId]);
+  const [nowMs] = useState(() => Date.now());
+  const defaultCursorKey = getDateKeyInTimezone(new Date(nowMs), timeZone);
+  const [cursorOverride, setCursorOverride] = useState<string | null>(null);
+  const cursorDateKey = cursorOverride ?? defaultCursorKey;
+  const setCursorDateKey = (next: string | ((key: string) => string)) => {
+    setCursorOverride((prev) => {
+      const current = prev ?? defaultCursorKey;
+      return typeof next === 'function' ? next(current) : next;
+    });
+  };
 
   const effectiveStaffFilter =
     isStaff && scopedStaffId ? String(scopedStaffId) : staffFilterId;
@@ -103,13 +91,11 @@ export function AdminCalendarPanel() {
         : Number(effectiveStaffFilter),
   });
 
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
-
-  useEffect(() => {
-    if (data && isOnline) {
-      setLastSyncedAt(new Date(dataUpdatedAt));
-    }
-  }, [data, dataUpdatedAt, isOnline]);
+  const lastSyncedAtRef = useRef<number | null>(null);
+  if (data && isOnline) {
+    lastSyncedAtRef.current = dataUpdatedAt;
+  }
+  const lastSyncedAt = lastSyncedAtRef.current;
 
   const items = useMemo(
     () =>
@@ -189,83 +175,27 @@ export function AdminCalendarPanel() {
                     timeZone,
                     dateStyle: 'medium',
                     timeStyle: 'short',
-                  }).format(lastSyncedAt),
+                  }).format(new Date(lastSyncedAt)),
                 })}
               </>
             ) : null}
           </AlertDescription>
         </Alert>
       ) : null}
-      <CardHeader className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>{t('calendarTitle')}</CardTitle>
-          <Tabs
-            value={view}
-            onValueChange={(value) => setView(value as CalendarView)}
-          >
-            <TabsList className="min-h-11">
-              <TabsTrigger value="day" className="min-h-11">
-                {t('dayView')}
-              </TabsTrigger>
-              <TabsTrigger value="week" className="min-h-11">
-                {t('weekView')}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {!isStaff ? (
-            <Select value={staffFilterId} onValueChange={setStaffFilterId}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="All staff" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All staff</SelectItem>
-                {(staffList ?? []).map((member) => (
-                  <SelectItem key={member.id} value={String(member.id)}>
-                    {member.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : null}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="min-h-11 min-w-11"
-            onClick={() =>
-              setCursorDateKey((key) => shiftDateKey(key, view, -1))
-            }
-          >
-            <ChevronLeft className="size-4" />
-          </Button>
-          <div className="text-center">
-            <p className="font-medium">{heading}</p>
-            <Button
-              variant="link"
-              size="sm"
-              className="text-muted-foreground h-auto min-h-11 p-0"
-              onClick={() =>
-                setCursorDateKey(getDateKeyInTimezone(new Date(), timeZone))
-              }
-            >
-              {t('today')}
-            </Button>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="min-h-11 min-w-11"
-            onClick={() =>
-              setCursorDateKey((key) => shiftDateKey(key, view, 1))
-            }
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-        </div>
-      </CardHeader>
+      <CalendarPanelToolbar
+        view={view}
+        heading={heading}
+        isStaff={isStaff}
+        staffFilterId={staffFilterId}
+        staffList={staffList ?? []}
+        onViewChange={setView}
+        onStaffFilterChange={setStaffFilterId}
+        onPrev={() => setCursorDateKey((key) => shiftDateKey(key, view, -1))}
+        onNext={() => setCursorDateKey((key) => shiftDateKey(key, view, 1))}
+        onToday={() =>
+          setCursorDateKey(getDateKeyInTimezone(new Date(), timeZone))
+        }
+      />
       <CardContent>
         {isLoading ? <PageLoading rows={6} /> : null}
         {!isLoading && items.length === 0 ? (

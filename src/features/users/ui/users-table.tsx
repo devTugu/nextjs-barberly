@@ -116,7 +116,7 @@ export function UsersTable() {
         ),
       },
     ],
-    [userColumns, tCommon, tTable],
+    [userColumns, tCommon, tTable, can],
   );
 
   const canCreate = can(PERMISSION_CODES.USER_CREATE);

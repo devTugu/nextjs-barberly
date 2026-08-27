@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -33,26 +33,45 @@ export function BrandBatchWithdrawSheet({
   open,
   onOpenChange,
 }: BrandBatchWithdrawSheetProps) {
+  const tenant = useTenantSubdomain();
+  const balancesQuery = useBrandBranchBalances(tenant, open);
+  if (!open) return null;
+  return (
+    <BrandBatchWithdrawSheetInner
+      key={
+        balancesQuery.data
+          ? `ready-${balancesQuery.data.brandRootId}`
+          : 'loading'
+      }
+      open={open}
+      onOpenChange={onOpenChange}
+      tenant={tenant}
+      balancesQuery={balancesQuery}
+    />
+  );
+}
+
+function BrandBatchWithdrawSheetInner({
+  open,
+  onOpenChange,
+  tenant,
+  balancesQuery,
+}: BrandBatchWithdrawSheetProps & {
+  tenant: string;
+  balancesQuery: ReturnType<typeof useBrandBranchBalances>;
+}) {
   const t = useTranslations('entities.wallet');
   const tCommon = useTranslations('common');
-  const tenant = useTenantSubdomain();
   const { can } = useAuthPermissions();
-  const balancesQuery = useBrandBranchBalances(tenant, open);
   const batchWithdraw = useRequestWithdrawalBatch(tenant);
   const [reference, setReference] = useState('');
-  const [drafts, setDrafts] = useState<BranchDraft[]>([]);
-
-  useEffect(() => {
-    if (!open || !balancesQuery.data) return;
-    setReference('');
-    setDrafts(
-      balancesQuery.data.branches.map((branch) => ({
-        tenantId: branch.tenantId,
-        selected: branch.balance > 0,
-        amount: branch.balance > 0 ? branch.balance : 0,
-      })),
-    );
-  }, [open, balancesQuery.data]);
+  const [drafts, setDrafts] = useState<BranchDraft[]>(() =>
+    (balancesQuery.data?.branches ?? []).map((branch) => ({
+      tenantId: branch.tenantId,
+      selected: branch.balance > 0,
+      amount: branch.balance > 0 ? branch.balance : 0,
+    })),
+  );
 
   const branchById = useMemo(() => {
     const map = new Map(

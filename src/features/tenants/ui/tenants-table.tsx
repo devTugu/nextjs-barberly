@@ -89,7 +89,7 @@ export function TenantsTable() {
         ),
       },
     ],
-    [tenantColumns, t, tCommon, router],
+    [tenantColumns, t, tCommon, router, can],
   );
 
   const canCreate = can(PERMISSION_CODES.TENANT_CREATE);
