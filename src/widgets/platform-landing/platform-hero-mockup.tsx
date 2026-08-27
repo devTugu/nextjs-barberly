@@ -7,16 +7,18 @@ import { cn } from '@/shared/lib/utils';
 interface PlatformHeroMockupProps {
   shop: PublicShopCard | null;
   fallbackTitle: string;
+  fallbackTagline: string;
 }
 
 export function PlatformHeroMockup({
   shop,
   fallbackTitle,
+  fallbackTagline,
 }: PlatformHeroMockupProps) {
   const title = shop?.name ?? fallbackTitle;
-  const tagline = shop?.heroSubtitle ?? shop?.heroTagline ?? title;
+  const tagline = shop?.heroSubtitle ?? shop?.heroTagline ?? fallbackTagline;
   const brand = shop?.brandColor ?? '#d4b896';
-  const chrome = shop ? `${shop.subdomain}.barberly.mn` : fallbackTitle;
+  const chrome = shop ? `${shop.subdomain}.barberly.mn` : 'shop.barberly.mn';
 
   return (
     <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#0c0c0c] text-white shadow-[0_40px_80px_-24px_rgba(15,10,40,0.55)]">

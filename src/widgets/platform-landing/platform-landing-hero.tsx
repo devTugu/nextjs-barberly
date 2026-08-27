@@ -27,10 +27,11 @@ export function PlatformLandingHero({
   const t = useTranslations('marketing');
 
   return (
-    <section className="relative overflow-hidden pb-10 pt-4 md:pb-16">
-      <AnimatedMesh className="-top-24" />
-      <FilmGrain />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-white/55 to-white" />
+    <section className="relative min-h-[78vh] overflow-hidden pb-16 pt-6 md:pb-24">
+      <AnimatedMesh className="-top-28" />
+      <FilmGrain className="opacity-40" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white via-white/55 to-transparent lg:via-white/25" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white to-transparent" />
       <Container className="relative z-10">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
           <FadeIn className="max-w-xl">
@@ -61,7 +62,8 @@ export function PlatformLandingHero({
             <TiltStage className="mx-auto max-w-lg">
               <PlatformHeroMockup
                 shop={featuredShop}
-                fallbackTitle={t('hero.mockupTitle')}
+                fallbackTitle={t('platform.brand')}
+                fallbackTagline={t('platform.mockupTagline')}
               />
             </TiltStage>
           </FadeIn>
