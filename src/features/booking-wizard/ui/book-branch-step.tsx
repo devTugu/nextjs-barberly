@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { MapPin } from 'lucide-react';
 import { publicGet } from '@/shared/lib/public-api';
-import { tenantSiteUrl } from '@/shared/lib/tenant-url';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { ROUTES } from '@/shared/config/routes';
 import { navigateToBranchWithSession } from '@/entities/customer';
