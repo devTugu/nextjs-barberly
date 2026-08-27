@@ -3,7 +3,16 @@ import { mutatingFetchHeaders } from '@/shared/lib/csrf-client';
 import { PublicApiError } from '@/shared/lib/public-api-error';
 
 async function parseJson<T>(response: Response): Promise<T> {
-  const body = (await response.json()) as ApiEnvelope<T> | ApiErrorEnvelope;
+  const text = await response.text();
+  if (!text.trim()) {
+    throw new PublicApiError(`Request failed (${response.status})`, 'UNKNOWN');
+  }
+  let body: ApiEnvelope<T> | ApiErrorEnvelope;
+  try {
+    body = JSON.parse(text) as ApiEnvelope<T> | ApiErrorEnvelope;
+  } catch {
+    throw new PublicApiError(`Request failed (${response.status})`, 'UNKNOWN');
+  }
   if (!response.ok || !body.success) {
     const code =
       !body.success && body.error && typeof body.error.code === 'string'
