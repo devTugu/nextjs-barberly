@@ -19,16 +19,6 @@ import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/shared/ui/alert-dialog';
 import { Button } from '@/shared/ui/button';
 import {
   DropdownMenu,
@@ -36,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import { BookingConfirmDialog } from './booking-confirm-dialog';
 
 interface BookingActionsMenuProps {
   booking: BookingOutput;
@@ -246,105 +237,48 @@ export function BookingActionsMenu({ booking }: BookingActionsMenuProps) {
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
-      <AlertDialog open={completeOpen} onOpenChange={setCompleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('completeConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {isFullySettled
-                ? t('completeConfirmDescription')
-                : t('completeRequiresSettlement')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={complete.isPending}>
-              {tCommon('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={complete.isPending || !isFullySettled}
-              onClick={handleComplete}
-            >
-              {complete.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
-              {t('actionComplete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog open={reopenOpen} onOpenChange={setReopenOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('reopenConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('reopenConfirmDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={reopen.isPending}>
-              {tCommon('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={reopen.isPending}
-              onClick={handleReopen}
-            >
-              {reopen.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
-              {t('actionReopenSettlement')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog open={noShowOpen} onOpenChange={setNoShowOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('noShowConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('noShowConfirmDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={noShow.isPending}>
-              {tCommon('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={noShow.isPending}
-              onClick={handleNoShow}
-            >
-              {noShow.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
-              {t('actionNoShow')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('cancelConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('cancelFullRefundHint')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancel.isPending}>
-              {tCommon('cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              disabled={cancel.isPending}
-              onClick={handleCancel}
-            >
-              {cancel.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : null}
-              {t('actionCancel')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <BookingConfirmDialog
+        open={completeOpen}
+        onOpenChange={setCompleteOpen}
+        title={t('completeConfirmTitle')}
+        description={
+          isFullySettled
+            ? t('completeConfirmDescription')
+            : t('completeRequiresSettlement')
+        }
+        confirmLabel={t('actionComplete')}
+        pending={complete.isPending}
+        disabled={!isFullySettled}
+        onConfirm={() => void handleComplete()}
+      />
+      <BookingConfirmDialog
+        open={reopenOpen}
+        onOpenChange={setReopenOpen}
+        title={t('reopenConfirmTitle')}
+        description={t('reopenConfirmDescription')}
+        confirmLabel={t('actionReopenSettlement')}
+        pending={reopen.isPending}
+        onConfirm={() => void handleReopen()}
+      />
+      <BookingConfirmDialog
+        open={noShowOpen}
+        onOpenChange={setNoShowOpen}
+        title={t('noShowConfirmTitle')}
+        description={t('noShowConfirmDescription')}
+        confirmLabel={t('actionNoShow')}
+        pending={noShow.isPending}
+        onConfirm={() => void handleNoShow()}
+      />
+      <BookingConfirmDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        title={t('cancelConfirmTitle')}
+        description={t('cancelFullRefundHint')}
+        confirmLabel={t('actionCancel')}
+        pending={cancel.isPending}
+        destructive
+        onConfirm={() => void handleCancel()}
+      />
     </>
   );
 }

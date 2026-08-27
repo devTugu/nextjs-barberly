@@ -31,7 +31,7 @@ Import rules (enforced by `eslint-plugin-boundaries`):
 - Upper layers import lower layers only.
 - Features **cannot** import widgets or other features.
 - Shared **cannot** import entities, features, or widgets.
-- Cross-slice imports on features/entities/widgets go through `index.ts` only. Deep paths such as `@/entities/user/ui/user-columns` are lint errors.
+- Cross-slice imports on features/entities/widgets go through `index.ts` only. Deep paths such as `@/entities/user/ui/user-columns` are lint errors because allow rules require `internalPath: index.ts`.
 
 Session identity (`useAuthStore`, `useAuthPermissions`) lives in `entities/session` so every feature can read auth state without importing `features/auth`.
 

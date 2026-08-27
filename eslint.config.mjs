@@ -3,7 +3,7 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import boundaries from "eslint-plugin-boundaries";
 
-const slicedLayers = ["widgets", "features", "entities"];
+const slicePublicApi = ["index.ts", "index.tsx"];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -51,14 +51,14 @@ const eslintConfig = defineConfig([
         {
           default: "disallow",
           message:
-            "FSD layer violation: ${file.type} cannot import from ${dependency.type}",
+            "FSD: {{from.type}} cannot import {{to.type}}/{{to.captured.slice}} ({{to.internalPath}}). Use the slice index.ts public API.",
           rules: [
             {
               from: { type: "app" },
               allow: [
-                { to: { type: "widgets" } },
-                { to: { type: "features" } },
-                { to: { type: "entities" } },
+                { to: { type: "widgets", internalPath: slicePublicApi } },
+                { to: { type: "features", internalPath: slicePublicApi } },
+                { to: { type: "entities", internalPath: slicePublicApi } },
                 { to: { type: "shared" } },
                 { to: { type: "processes" } },
                 { to: { type: "app" } },
@@ -67,23 +67,23 @@ const eslintConfig = defineConfig([
             {
               from: { type: "widgets" },
               allow: [
-                { to: { type: "widgets" } },
-                { to: { type: "features" } },
-                { to: { type: "entities" } },
+                { to: { type: "widgets", internalPath: slicePublicApi } },
+                { to: { type: "features", internalPath: slicePublicApi } },
+                { to: { type: "entities", internalPath: slicePublicApi } },
                 { to: { type: "shared" } },
               ],
             },
             {
               from: { type: "features" },
               allow: [
-                { to: { type: "entities" } },
+                { to: { type: "entities", internalPath: slicePublicApi } },
                 { to: { type: "shared" } },
               ],
             },
             {
               from: { type: "entities" },
               allow: [
-                { to: { type: "entities" } },
+                { to: { type: "entities", internalPath: slicePublicApi } },
                 { to: { type: "shared" } },
               ],
             },
@@ -98,21 +98,6 @@ const eslintConfig = defineConfig([
                 { to: { type: "processes" } },
               ],
             },
-            {
-              from: {
-                type: ["app", "widgets", "features", "entities", "processes"],
-              },
-              disallow: [
-                {
-                  to: {
-                    type: slicedLayers,
-                    internalPath: "!(index.ts|index.tsx)",
-                  },
-                },
-              ],
-              message:
-                "FSD public API: import ${dependency.type}/${to.captured.slice} through index.ts, not ${to.internalPath}",
-            },
           ],
         },
       ],
@@ -122,6 +107,7 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "coverage/**",
     "next-env.d.ts",
     "scripts/**",
     "e2e/**",
