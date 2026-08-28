@@ -82,8 +82,12 @@ export const loadPlatformLanding = cache(
 );
 
 export const tenantExists = cache(async (subdomain: string): Promise<boolean> => {
-  const res = await fetchInternal(`/public/tenant?tenant=${subdomain}`);
-  return res.ok;
+  try {
+    const res = await fetchInternal(`/public/tenant?tenant=${subdomain}`);
+    return res.ok;
+  } catch {
+    return false;
+  }
 });
 
 export async function loadTenantMarketingContext(
