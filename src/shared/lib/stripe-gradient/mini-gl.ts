@@ -15,7 +15,11 @@ export class MiniGL {
 
   constructor(canvas: HTMLCanvasElement, width: number, height: number) {
     this.canvas = canvas;
-    const context = canvas.getContext('webgl', { antialias: true, alpha: true });
+    const context = canvas.getContext('webgl', {
+      antialias: true,
+      alpha: true,
+      failIfMajorPerformanceCaveat: true,
+    });
     if (!context) {
       throw new Error('WebGL is not supported in this browser.');
     }

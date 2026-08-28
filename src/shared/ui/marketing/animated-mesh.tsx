@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useIsMounted } from '@/shared/hooks/use-is-mounted';
 import { usePrefersReducedMotion } from '@/shared/hooks/use-prefers-reduced-motion';
 import { StripeGradientEngine } from '@/shared/lib/stripe-gradient';
@@ -14,16 +14,31 @@ interface AnimatedMeshProps {
   gradientColors?: readonly string[];
 }
 
+function scheduleIdle(callback: () => void): () => void {
+  if (typeof window.requestIdleCallback === 'function') {
+    const idleId = window.requestIdleCallback(callback, { timeout: 1500 });
+    return () => window.cancelIdleCallback(idleId);
+  }
+  const timeoutId = window.setTimeout(callback, 1);
+  return () => window.clearTimeout(timeoutId);
+}
+
 export function AnimatedMesh({ className, gradientColors }: AnimatedMeshProps) {
   const mounted = useIsMounted();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
-  const showCanvas = mounted && !prefersReducedMotion;
+  const [allowCanvas, setAllowCanvas] = useState(false);
+  const showCanvas = mounted && !prefersReducedMotion && allowCanvas;
   const stripeColors = gradientColors?.length
     ? [...gradientColors]
     : [...STRIPE_GRADIENT_DEFAULT_COLORS];
   const colorsKey = stripeColors.join(',');
+
+  useEffect(() => {
+    if (!mounted || prefersReducedMotion) return undefined;
+    return scheduleIdle(() => setAllowCanvas(true));
+  }, [mounted, prefersReducedMotion]);
 
   useEffect(() => {
     if (!showCanvas) return undefined;
