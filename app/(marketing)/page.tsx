@@ -55,6 +55,7 @@ export default async function HomePage() {
   return (
     <LuxuryTenantLanding
       tenantName={data.name}
+      origin={requestOrigin(host)}
       settings={data.settings}
       landingContent={landingContent}
       services={data.services}

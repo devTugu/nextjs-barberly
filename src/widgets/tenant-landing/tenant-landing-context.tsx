@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -74,7 +73,7 @@ export function TenantLandingShell({ children }: TenantLandingShellProps) {
   const tenant = useTenantSubdomain();
   const router = useRouter();
   const [session, setSession] = useState<CustomerSession | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authInitialStep, setAuthInitialStep] = useState<'phone' | 'name'>(
     'phone',
@@ -85,22 +84,6 @@ export function TenantLandingShell({ children }: TenantLandingShellProps) {
     const next = await fetchCustomerSession(tenant);
     setSession(next);
     setSessionLoading(false);
-  }, [tenant]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchCustomerSession(tenant)
-      .then((next) => {
-        if (cancelled) return;
-        setSession(next);
-        setSessionLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) setSessionLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [tenant]);
 
   const navigateToBook = useCallback(
@@ -119,6 +102,7 @@ export function TenantLandingShell({ children }: TenantLandingShellProps) {
     setPendingBookPath(bookPath);
 
     const current = session ?? (await fetchCustomerSession(tenant));
+    if (current) setSession(current);
     if (current && !current.needsProfile) {
       await navigateToBook(bookPath);
       return;

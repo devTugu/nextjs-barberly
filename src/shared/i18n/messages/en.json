@@ -421,7 +421,10 @@
     "address": "Address",
     "openingHours": "Opening hours",
     "closedDay": "Closed",
-    "upcomingHolidays": "Upcoming holidays"
+    "upcomingHolidays": "Upcoming holidays",
+    "mapsLink": "Open in Google Maps",
+    "contactEmpty": "Book online and we will confirm the details with you.",
+    "poweredBy": "On"
   },
   "auth": {
     "signIn": "Sign in",

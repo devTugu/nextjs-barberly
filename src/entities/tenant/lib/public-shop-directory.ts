@@ -105,3 +105,18 @@ export const loadPublicShopDirectory = cache(
     return mapInBatches(items, HYDRATE_BATCH, (item) => hydrateShop(item, host));
   },
 );
+
+export const loadPublicShopSitemapEntries = cache(
+  async (): Promise<Array<{ subdomain: string }>> => {
+    let raw: unknown = null;
+    for (const path of DIRECTORY_PATHS) {
+      raw = await tryLoadDirectory(path);
+      if (raw) break;
+    }
+    return selectShowcaseShops(
+      extractDirectoryList(raw)
+        .map(toDirectoryItem)
+        .filter((item): item is PublicDirectoryItem => item !== null),
+    ).map((item) => ({ subdomain: item.subdomain }));
+  },
+);

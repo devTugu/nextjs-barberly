@@ -13,6 +13,12 @@ interface PageSeoInput {
   path?: string;
   locale: string;
   siteName: string;
+  imageUrl?: string | null;
+}
+
+export function documentTitle(title: string, siteName: string): string {
+  if (!title || title === siteName) return siteName;
+  return `${title} · ${siteName}`;
 }
 
 export function absolutePageUrl(origin: string, path = '/'): string {
@@ -27,13 +33,16 @@ export function buildPageSeoMetadata({
   path = '/',
   locale,
   siteName,
+  imageUrl,
 }: PageSeoInput): Metadata {
   const url = absolutePageUrl(origin, path);
   const openGraphLocale = OG_LOCALE[locale] ?? 'mn_MN';
+  const absoluteTitle = documentTitle(title, siteName);
+  const images = imageUrl ? [{ url: imageUrl }] : undefined;
 
   return {
     metadataBase: new URL(origin),
-    title: { absolute: `${title} · ${siteName}` },
+    title: { absolute: absoluteTitle },
     description,
     alternates: { canonical: url },
     robots: { index: true, follow: true },
@@ -44,11 +53,13 @@ export function buildPageSeoMetadata({
       siteName,
       title,
       description,
+      images,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: imageUrl ? [imageUrl] : undefined,
     },
   };
 }
@@ -104,5 +115,25 @@ export function platformLandingSeo(
     origin,
     locale,
     siteName,
+  });
+}
+
+export function tenantLandingSeo(input: {
+  name: string;
+  tagline?: string | null;
+  about?: string | null;
+  origin: string;
+  locale: string;
+  imageUrl?: string | null;
+}): Metadata {
+  const description = input.about ?? input.tagline ?? 'Barbershop booking';
+  const title = input.tagline ?? input.about ?? input.name;
+  return buildPageSeoMetadata({
+    title,
+    description,
+    origin: input.origin,
+    locale: input.locale,
+    siteName: input.name,
+    imageUrl: input.imageUrl,
   });
 }

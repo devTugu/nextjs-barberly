@@ -421,7 +421,10 @@
     "address": "Хаяг",
     "openingHours": "Ажиллах цаг",
     "closedDay": "Амарна",
-    "upcomingHolidays": "Удахгүйх амралтын өдрүүд"
+    "upcomingHolidays": "Удахгүйх амралтын өдрүүд",
+    "mapsLink": "Google Maps дээр нээх",
+    "contactEmpty": "Онлайнаар цаг захиалаад, дэлгэрэнгүйг бид баталгаажуулна.",
+    "poweredBy": "Платформ"
   },
   "auth": {
     "signIn": "Нэвтрэх",

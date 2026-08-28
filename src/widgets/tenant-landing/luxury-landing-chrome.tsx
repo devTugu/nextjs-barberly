@@ -3,11 +3,10 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ROUTES } from '@/shared/config/routes';
-import { brandPrimaryButtonClass } from '@/shared/lib/brand-styles';
-import { cn } from '@/shared/lib/utils';
 import { BrandLogo } from '@/shared/ui/brand-logo';
-import { Button } from '@/shared/ui/button';
+import { TenantBookButton } from './tenant-book-button';
 import { useTenantLanding } from './tenant-landing-context';
+import type { TenantNavItem } from './tenant-landing-types';
 
 interface LuxuryLandingChromeProps {
   tenantName: string;
@@ -15,8 +14,7 @@ interface LuxuryLandingChromeProps {
   verticalLabel?: string | null;
   sidebarBrandName?: string | null;
   establishedYear?: string | null;
-  navItems: Array<{ href: string; label: string }>;
-  isLoggedIn: boolean;
+  navItems: TenantNavItem[];
 }
 
 export function LuxuryLandingChrome({
@@ -26,10 +24,10 @@ export function LuxuryLandingChrome({
   sidebarBrandName,
   establishedYear,
   navItems,
-  isLoggedIn,
 }: LuxuryLandingChromeProps) {
   const t = useTranslations('home');
-  const { handleBookClick } = useTenantLanding();
+  const { session, handleBookClick } = useTenantLanding();
+  const isLoggedIn = Boolean(session && !session.needsProfile);
 
   return (
     <>
@@ -59,17 +57,12 @@ export function LuxuryLandingChrome({
               {t('myBookings')}
             </Link>
           ) : (
-            <Button
-              type="button"
+            <TenantBookButton
               size="sm"
-              className={cn(
-                'shrink-0 rounded-none text-[10px] uppercase tracking-[0.15em]',
-                brandPrimaryButtonClass,
-              )}
-              onClick={() => void handleBookClick()}
+              className="shrink-0 rounded-none text-[10px] uppercase tracking-[0.15em]"
             >
               {t('bookAppointment')}
-            </Button>
+            </TenantBookButton>
           )}
         </div>
       </header>
@@ -81,7 +74,7 @@ export function LuxuryLandingChrome({
         <span className="text-3xl font-black uppercase tracking-tight [writing-mode:vertical-rl] rotate-180 xl:text-4xl">
           {sidebarBrandName ?? 'BARBER'}
         </span>
-        <span className="text-[10px] text-white/40 [writing-mode:vertical-rl] rotate-180">
+        <span className="text-[10px] text-white/65 [writing-mode:vertical-rl] rotate-180">
           {establishedYear ?? 'EST. 2023'}
         </span>
       </aside>

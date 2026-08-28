@@ -1,8 +1,4 @@
 export { LuxuryTenantLanding } from './luxury-tenant-landing';
-export { TenantLandingHero } from './tenant-landing-hero';
-export type {
-  TenantLandingHeroProps,
-  TenantLandingService,
-} from './tenant-landing-hero';
+export type { LuxuryTenantLandingProps } from './luxury-tenant-landing';
 export { TenantLandingShell } from './tenant-landing-context';
-export { TenantLandingHeader } from './tenant-landing-header';
+export type { TenantLandingService } from './tenant-landing-types';

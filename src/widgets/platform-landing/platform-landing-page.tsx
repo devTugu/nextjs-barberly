@@ -5,9 +5,9 @@ import {
   type PublicShopCard,
 } from '@/entities/tenant';
 import { CsrfBootstrap } from '@/shared/ui/csrf-bootstrap';
+import { JsonLd } from '@/shared/ui/json-ld';
 import { PlatformContact } from './platform-contact';
 import { PlatformFeatures } from './platform-features';
-import { PlatformJsonLd } from './platform-json-ld';
 import { PlatformLandingHeader } from './platform-landing-header';
 import { PlatformLandingHero } from './platform-landing-hero';
 import { PlatformPricing } from './platform-pricing';
@@ -39,7 +39,7 @@ export async function PlatformLandingPage({
 
   return (
     <div className="marketing-surface relative min-h-svh overflow-x-hidden bg-white text-[var(--marketing-navy)]">
-      <PlatformJsonLd
+      <JsonLd
         data={buildPlatformJsonLd({
           origin,
           siteName: brand,

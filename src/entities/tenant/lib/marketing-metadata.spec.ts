@@ -4,8 +4,11 @@ import {
   absolutePageUrl,
   buildPageSeoMetadata,
   buildPlatformJsonLd,
+  documentTitle,
   platformLandingSeo,
+  tenantLandingSeo,
 } from './marketing-metadata';
+import { buildTenantJsonLd } from './tenant-json-ld';
 
 describe('absolutePageUrl', () => {
   it('joins origin and path without duplicate slashes', () => {
@@ -36,6 +39,33 @@ describe('buildPageSeoMetadata', () => {
   });
 });
 
+describe('documentTitle', () => {
+  it('does not duplicate the shop name', () => {
+    expect(documentTitle('Atelier', 'Atelier')).toBe('Atelier');
+    expect(documentTitle('Precision cuts', 'Atelier')).toBe(
+      'Precision cuts · Atelier',
+    );
+  });
+});
+
+describe('tenantLandingSeo', () => {
+  it('uses the tagline in the title and the about text as description', () => {
+    const metadata = tenantLandingSeo({
+      name: 'Atelier',
+      tagline: 'Precision cuts',
+      about: 'A modern barbershop in Ulaanbaatar.',
+      origin: 'https://atelier.barberly.mn',
+      locale: 'mn',
+      imageUrl: 'https://cdn.example/banner.jpg',
+    });
+    expect(metadata.title).toEqual({ absolute: 'Precision cuts · Atelier' });
+    expect(metadata.description).toBe('A modern barbershop in Ulaanbaatar.');
+    expect(metadata.openGraph?.images).toEqual([
+      { url: 'https://cdn.example/banner.jpg' },
+    ]);
+  });
+});
+
 describe('platformLandingSeo', () => {
   it('uses the CMS hero copy for title and description', () => {
     const metadata = platformLandingSeo(
@@ -62,5 +92,29 @@ describe('buildPlatformJsonLd', () => {
       'SoftwareApplication',
       'WebSite',
     ]);
+  });
+});
+
+describe('buildTenantJsonLd', () => {
+  it('emits HairSalon NAP and opening hours', () => {
+    const json = buildTenantJsonLd({
+      origin: 'https://atelier.barberly.mn',
+      name: 'Atelier',
+      description: 'Cuts',
+      telephone: '99112233',
+      address: 'UB',
+      image: 'https://cdn.example/banner.jpg',
+      scheduleDays: [
+        {
+          dayOfWeek: 1,
+          closed: false,
+          blocks: [{ startTime: '09:00:00', endTime: '18:00:00' }],
+        },
+      ],
+    });
+    expect(json['@type']).toBe('HairSalon');
+    expect(json.telephone).toBe('99112233');
+    const hours = json.openingHoursSpecification as Array<{ opens: string }>;
+    expect(hours[0]?.opens).toBe('09:00');
   });
 });

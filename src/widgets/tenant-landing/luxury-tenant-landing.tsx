@@ -1,39 +1,31 @@
-'use client';
-
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import type { TenantLandingContent } from '@/entities/tenant';
-import { CustomerBranchPicker } from '@/features/user-portal';
-import { ROUTES } from '@/shared/config/routes';
-import { TenantBrandBootstrap } from '@/shared/ui/tenant-brand-bootstrap';
+import { buildTenantJsonLd } from '@/entities/tenant';
+import { JsonLd } from '@/shared/ui/json-ld';
+import { IdleBranchPicker } from './idle-branch-picker';
 import { LuxuryLandingChrome } from './luxury-landing-chrome';
 import { LuxuryLandingSections } from './luxury-landing-sections';
-import { TenantLandingShell, useTenantLanding } from './tenant-landing-context';
-import type { TenantLandingService } from './tenant-landing-hero';
+import { TenantLandingShell } from './tenant-landing-context';
+import type {
+  TenantLandingService,
+  TenantLandingSettings,
+  TenantScheduleDay,
+} from './tenant-landing-types';
 
 export interface LuxuryTenantLandingProps {
   tenantName: string;
-  settings?: {
-    logoUrl?: string | null;
-    bannerUrl?: string | null;
-    phone?: string | null;
-    address?: string | null;
-    brandColor?: string | null;
-  };
+  origin: string;
+  settings?: TenantLandingSettings;
   landingContent: TenantLandingContent;
   services: TenantLandingService[];
   openingHoursSummary: string | null;
-  scheduleDays?: Array<{
-    dayOfWeek: number;
-    label: string;
-    closed: boolean;
-    blocks: Array<{ startTime: string; endTime: string }>;
-  }>;
+  scheduleDays?: TenantScheduleDay[];
   upcomingHolidays?: Array<{ localDate: string; name: string }>;
 }
 
-function LuxuryTenantLandingBody({
+export async function LuxuryTenantLanding({
   tenantName,
+  origin,
   settings,
   landingContent,
   services,
@@ -41,10 +33,8 @@ function LuxuryTenantLandingBody({
   scheduleDays = [],
   upcomingHolidays = [],
 }: LuxuryTenantLandingProps) {
-  const t = useTranslations('home');
-  const { session } = useTenantLanding();
-  const [year] = useState(() => new Date().getFullYear());
-  const isLoggedIn = Boolean(session && !session.needsProfile);
+  const t = await getTranslations('home');
+  const year = new Date().getFullYear();
   const navItems = [
     { href: '#about', label: t('navAbout') },
     { href: '#prices', label: t('navPrices') },
@@ -53,50 +43,53 @@ function LuxuryTenantLandingBody({
   ];
 
   return (
-    <div
-      className="customer-app dark min-h-svh bg-[#0a0a0a] text-white"
-      style={
-        settings?.brandColor
-          ? ({ '--brand-primary': settings.brandColor } as React.CSSProperties)
-          : undefined
-      }
-    >
-      <TenantBrandBootstrap />
-      <div className="lg:pl-20">
-        <LuxuryLandingChrome
-          tenantName={tenantName}
-          logoUrl={settings?.logoUrl}
-          verticalLabel={landingContent.verticalLabel}
-          sidebarBrandName={landingContent.sidebarBrandName}
-          establishedYear={landingContent.establishedYear}
-          navItems={navItems}
-          isLoggedIn={isLoggedIn}
-        />
-        <CustomerBranchPicker
-          preferBookable
-          path={ROUTES.HOME}
-          className="border-b border-white/5 px-4 py-2"
-        />
-        <LuxuryLandingSections
-          landingContent={landingContent}
-          settings={settings}
-          services={services}
-          openingHoursSummary={openingHoursSummary}
-          scheduleDays={scheduleDays}
-          upcomingHolidays={upcomingHolidays}
-          tenantName={tenantName}
-          year={year}
-        />
-        <div className="h-14 lg:hidden" aria-hidden />
-      </div>
-    </div>
-  );
-}
-
-export function LuxuryTenantLanding(props: LuxuryTenantLandingProps) {
-  return (
     <TenantLandingShell>
-      <LuxuryTenantLandingBody {...props} />
+      <div
+        className="customer-app dark min-h-svh bg-[#0a0a0a] text-white"
+        style={
+          settings?.brandColor
+            ? ({ '--brand-primary': settings.brandColor } as React.CSSProperties)
+            : undefined
+        }
+      >
+        <JsonLd
+          data={buildTenantJsonLd({
+            origin,
+            name: tenantName,
+            description:
+              landingContent.aboutDescription ??
+              landingContent.heroTagline ??
+              tenantName,
+            telephone: settings?.phone ?? null,
+            address: settings?.address ?? null,
+            image: settings?.bannerUrl ?? settings?.logoUrl ?? null,
+            scheduleDays,
+          })}
+        />
+        <div className="lg:pl-20">
+          <LuxuryLandingChrome
+            tenantName={tenantName}
+            logoUrl={settings?.logoUrl}
+            verticalLabel={landingContent.verticalLabel}
+            sidebarBrandName={landingContent.sidebarBrandName}
+            establishedYear={landingContent.establishedYear}
+            navItems={navItems}
+          />
+          <IdleBranchPicker />
+          <LuxuryLandingSections
+            landingContent={landingContent}
+            settings={settings}
+            services={services}
+            openingHoursSummary={openingHoursSummary}
+            scheduleDays={scheduleDays}
+            upcomingHolidays={upcomingHolidays}
+            tenantName={tenantName}
+            year={year}
+            navItems={navItems}
+          />
+          <div className="h-14 lg:hidden" aria-hidden />
+        </div>
+      </div>
     </TenantLandingShell>
   );
 }

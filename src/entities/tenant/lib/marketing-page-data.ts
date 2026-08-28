@@ -5,7 +5,7 @@ import { resolveHostContext } from '@/shared/lib/host-context';
 import { fetchInternal, parseInternalJson } from '@/shared/lib/internal-api';
 import { platformSiteUrl, requestOrigin } from '@/shared/lib/tenant-url';
 import { ROUTES } from '@/shared/config/routes';
-import { platformLandingSeo, buildPageSeoMetadata } from './marketing-metadata';
+import { platformLandingSeo, tenantLandingSeo } from './marketing-metadata';
 
 export interface PublicTenantSettings {
   logoUrl?: string | null;
@@ -148,14 +148,12 @@ export async function buildMarketingMetadata(
     ...(data.settings?.landingContent ?? {}),
   };
 
-  return buildPageSeoMetadata({
-    title: data.name,
-    description:
-      landing.heroTagline ??
-      landing.aboutDescription ??
-      'Barbershop booking',
+  return tenantLandingSeo({
+    name: data.name,
+    tagline: landing.heroTagline,
+    about: landing.aboutDescription,
     origin,
     locale,
-    siteName: data.name,
+    imageUrl: data.settings?.bannerUrl ?? data.settings?.logoUrl,
   });
 }

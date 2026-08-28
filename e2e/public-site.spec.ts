@@ -48,4 +48,26 @@ test.describe('Public site', () => {
     await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
     expect(pageErrors).toEqual([]);
   });
+
+  test('tenant home has contact heading, footer, SEO, and no page errors', async ({
+    page,
+  }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => {
+      pageErrors.push(error.message);
+    });
+
+    await page.goto('http://demo.localhost:3000/');
+    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#contact h2')).toBeVisible();
+    await expect(page.locator('footer')).toBeVisible();
+    const title = await page.title();
+    expect(title).not.toMatch(/^(.*)\s·\s\1$/);
+    await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+    const jsonLd = await page
+      .locator('script[type="application/ld+json"]')
+      .textContent();
+    expect(jsonLd).toContain('HairSalon');
+    expect(pageErrors).toEqual([]);
+  });
 });
