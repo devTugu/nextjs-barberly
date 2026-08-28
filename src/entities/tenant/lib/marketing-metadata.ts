@@ -38,7 +38,6 @@ export function buildPageSeoMetadata({
   const url = absolutePageUrl(origin, path);
   const openGraphLocale = OG_LOCALE[locale] ?? 'mn_MN';
   const absoluteTitle = documentTitle(title, siteName);
-  const images = imageUrl ? [{ url: imageUrl }] : undefined;
 
   return {
     metadataBase: new URL(origin),
@@ -53,13 +52,13 @@ export function buildPageSeoMetadata({
       siteName,
       title,
       description,
-      images,
+      ...(imageUrl ? { images: [{ url: imageUrl }] } : {}),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: imageUrl ? [imageUrl] : undefined,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
     },
   };
 }

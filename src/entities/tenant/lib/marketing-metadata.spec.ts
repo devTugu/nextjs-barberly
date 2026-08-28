@@ -64,6 +64,16 @@ describe('tenantLandingSeo', () => {
       { url: 'https://cdn.example/banner.jpg' },
     ]);
   });
+
+  it('omits openGraph.images so the generated OG file can fill in', () => {
+    const metadata = tenantLandingSeo({
+      name: 'Atelier',
+      tagline: 'Precision cuts',
+      origin: 'https://atelier.barberly.mn',
+      locale: 'mn',
+    });
+    expect(metadata.openGraph).not.toHaveProperty('images');
+  });
 });
 
 describe('platformLandingSeo', () => {
