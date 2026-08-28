@@ -25,7 +25,7 @@ export function PlatformHeroMockup({
         <span className="size-2.5 rounded-full bg-red-400/80" />
         <span className="size-2.5 rounded-full bg-amber-400/80" />
         <span className="size-2.5 rounded-full bg-emerald-400/80" />
-        <span className="ml-2 truncate font-mono text-[11px] text-white/45">
+        <span className="ml-2 truncate font-mono text-[11px] text-white/65">
           {chrome}
         </span>
       </div>

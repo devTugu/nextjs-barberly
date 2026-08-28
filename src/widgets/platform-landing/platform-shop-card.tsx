@@ -25,7 +25,7 @@ export async function PlatformShopCard({ shop }: PlatformShopCardProps) {
           <span className="size-2 rounded-full bg-red-400/80" />
           <span className="size-2 rounded-full bg-amber-400/80" />
           <span className="size-2 rounded-full bg-emerald-400/80" />
-          <span className="ml-2 truncate font-mono text-[10px] text-white/45">
+          <span className="ml-2 truncate font-mono text-[10px] text-white/65">
             {hostLabel}
           </span>
         </div>
