@@ -1,5 +1,3 @@
-'use client';
-
 import Image from 'next/image';
 import type { PublicShopCard } from '@/entities/tenant';
 import { cn } from '@/shared/lib/utils';
@@ -19,6 +17,7 @@ export function PlatformHeroMockup({
   const tagline = shop?.heroSubtitle ?? shop?.heroTagline ?? fallbackTagline;
   const brand = shop?.brandColor ?? '#d4b896';
   const chrome = shop ? `${shop.subdomain}.barberly.mn` : 'shop.barberly.mn';
+  const imageAlt = shop ? `${shop.name} landing` : fallbackTitle;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#0c0c0c] text-white shadow-[0_40px_80px_-24px_rgba(15,10,40,0.55)]">
@@ -34,10 +33,11 @@ export function PlatformHeroMockup({
         {shop?.bannerUrl ? (
           <Image
             src={shop.bannerUrl}
-            alt=""
+            alt={imageAlt}
             fill
             className="object-cover opacity-80"
             unoptimized
+            priority
             sizes="(max-width: 768px) 100vw, 480px"
           />
         ) : (
@@ -53,7 +53,7 @@ export function PlatformHeroMockup({
           {shop?.logoUrl ? (
             <Image
               src={shop.logoUrl}
-              alt=""
+              alt={`${title} logo`}
               width={96}
               height={28}
               className="h-7 w-auto object-contain"

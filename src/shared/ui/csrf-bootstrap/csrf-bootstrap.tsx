@@ -5,7 +5,7 @@ import { ensureCsrfToken } from '@/shared/lib/csrf-client';
 
 export function CsrfBootstrap() {
   useEffect(() => {
-    void ensureCsrfToken();
+    void ensureCsrfToken().catch(() => undefined);
   }, []);
 
   return null;

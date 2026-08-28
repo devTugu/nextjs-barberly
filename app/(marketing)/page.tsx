@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { getLocale } from 'next-intl/server';
 import { resolveHostContext } from '@/shared/lib/host-context';
+import { requestOrigin } from '@/shared/lib/tenant-url';
 import {
   buildMarketingMetadata,
   loadPlatformLanding,
@@ -15,7 +17,8 @@ import { LuxuryTenantLanding } from '@/widgets/tenant-landing';
 
 export async function generateMetadata(): Promise<Metadata> {
   const host = (await headers()).get('host') ?? 'localhost:3000';
-  return buildMarketingMetadata(host);
+  const locale = await getLocale();
+  return buildMarketingMetadata(host, locale);
 }
 
 export default async function HomePage() {
@@ -38,6 +41,7 @@ export default async function HomePage() {
         content={content}
         platformLoginUrl={resolvePlatformLoginUrl(host)}
         shops={shops}
+        origin={requestOrigin(host)}
       />
     );
   }

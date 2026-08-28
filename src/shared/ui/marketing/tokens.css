@@ -70,7 +70,12 @@
   --marketing-ribbon-stroke-2-end: oklch(0.5 0.18 264 / 0.5);
 }
 
-@theme inline {
-  --color-marketing-indigo: var(--marketing-indigo);
-  --color-marketing-violet: var(--marketing-violet);
+.marketing-surface {
+  color-scheme: light;
+  --marketing-navy: oklch(0.22 0.04 264);
+  --marketing-text-muted: oklch(0.45 0.02 264);
+  --marketing-pill-bg: oklch(0.97 0.01 264);
+  --marketing-surface-muted: oklch(0.97 0.005 264);
+  --marketing-grid-line: oklch(0.922 0 0 / 0.6);
+  --marketing-grid-pattern-color: #80808014;
 }

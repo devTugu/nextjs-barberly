@@ -15,6 +15,32 @@ function withLeadingSlash(path: string): string {
   return path.startsWith('/') ? path : `/${path}`;
 }
 
+function isLocalHostname(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '127.0.0.1'
+  );
+}
+
+/** Absolute origin for the incoming Host header (SSR-safe). */
+export function requestOrigin(host: string): string {
+  const trimmed = host.trim();
+  if (!trimmed) {
+    return configuredSiteOrigin();
+  }
+  const hostname = stripPort(trimmed).toLowerCase();
+  const protocol = isLocalHostname(hostname) ? 'http' : 'https';
+  return `${protocol}://${trimmed}`;
+}
+
+/** Production canonical origin from env, without a trailing slash. */
+export function configuredSiteOrigin(): string {
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+  if (fromEnv) return fromEnv;
+  return `https://${ROOT_DOMAIN}`;
+}
+
 /** Build a tenant origin from the current request host (SSR-safe). */
 export function tenantSiteUrlForHost(
   host: string,

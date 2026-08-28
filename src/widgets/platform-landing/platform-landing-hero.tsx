@@ -1,9 +1,5 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
-import { ArrowRight } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import type { PlatformLandingContent, PublicShopCard } from '@/entities/tenant';
-import { FadeIn } from '@/shared/ui/motion';
 import {
   AnimatedMesh,
   Container,
@@ -11,20 +7,23 @@ import {
   MarketingButton,
   TiltStage,
 } from '@/shared/ui/marketing';
+import { ArrowRight } from 'lucide-react';
 import { PlatformHeroMockup } from './platform-hero-mockup';
 
 interface PlatformLandingHeroProps {
   content: PlatformLandingContent;
   platformLoginUrl: string;
   featuredShop: PublicShopCard | null;
+  liveShopCount: number;
 }
 
-export function PlatformLandingHero({
+export async function PlatformLandingHero({
   content,
   platformLoginUrl,
   featuredShop,
+  liveShopCount,
 }: PlatformLandingHeroProps) {
-  const t = useTranslations('marketing');
+  const t = await getTranslations('marketing');
 
   return (
     <section className="relative min-h-[78vh] overflow-hidden pb-16 pt-6 md:pb-24">
@@ -34,7 +33,7 @@ export function PlatformLandingHero({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white to-transparent" />
       <Container className="relative z-10">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
-          <FadeIn className="max-w-xl">
+          <div className="max-w-xl">
             <p className="text-xs font-medium uppercase tracking-[0.32em] text-[var(--marketing-indigo)]">
               {t('platform.eyebrow')}
             </p>
@@ -57,8 +56,13 @@ export function PlatformLandingHero({
                 <ArrowRight className="size-3.5" />
               </MarketingButton>
             </div>
-          </FadeIn>
-          <FadeIn delay={0.12} className="lg:pl-4">
+            {liveShopCount > 0 ? (
+              <p className="mt-6 text-sm text-[var(--marketing-text-muted)]">
+                {t('platform.liveShops', { count: liveShopCount })}
+              </p>
+            ) : null}
+          </div>
+          <div className="lg:pl-4">
             <TiltStage className="mx-auto max-w-lg">
               <PlatformHeroMockup
                 shop={featuredShop}
@@ -66,7 +70,7 @@ export function PlatformLandingHero({
                 fallbackTagline={t('platform.mockupTagline')}
               />
             </TiltStage>
-          </FadeIn>
+          </div>
         </div>
       </Container>
     </section>

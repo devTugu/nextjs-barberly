@@ -17,7 +17,7 @@ const variantClasses: Record<MarketingButtonVariant, string> = {
   primary:
     'bg-[var(--marketing-indigo)] text-white hover:bg-[oklch(0.4_0.2_264)] shadow-sm',
   secondary:
-    'bg-background text-foreground border border-border hover:bg-muted/50',
+    'bg-white text-[var(--marketing-navy)] border border-black/10 hover:bg-black/4',
   ghost: 'text-[var(--marketing-indigo)] hover:text-[oklch(0.4_0.2_264)]',
   signIn:
     'bg-[var(--marketing-navy)] text-white hover:bg-[oklch(0.18_0.04_264)] shadow-sm',

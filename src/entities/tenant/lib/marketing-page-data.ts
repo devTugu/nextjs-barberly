@@ -1,9 +1,11 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { DEFAULT_PLATFORM_LANDING, DEFAULT_TENANT_LANDING, type PlatformLandingContent, type TenantLandingContent } from '../types/landing-content';
 import { resolveHostContext } from '@/shared/lib/host-context';
 import { fetchInternal, parseInternalJson } from '@/shared/lib/internal-api';
-import { platformSiteUrl } from '@/shared/lib/tenant-url';
+import { platformSiteUrl, requestOrigin } from '@/shared/lib/tenant-url';
 import { ROUTES } from '@/shared/config/routes';
+import { platformLandingSeo, buildPageSeoMetadata } from './marketing-metadata';
 
 export interface PublicTenantSettings {
   logoUrl?: string | null;
@@ -66,21 +68,23 @@ export function normalizePlatformLanding(
   };
 }
 
-export async function loadPlatformLanding(): Promise<PlatformLandingContent> {
-  try {
-    const res = await fetchInternal('/public/platform/landing');
-    if (!res.ok) throw new Error('platform landing unavailable');
-    const body = await parseInternalJson<PlatformLandingContent>(res);
-    return normalizePlatformLanding(body.data);
-  } catch {
-    return DEFAULT_PLATFORM_LANDING;
-  }
-}
+export const loadPlatformLanding = cache(
+  async (): Promise<PlatformLandingContent> => {
+    try {
+      const res = await fetchInternal('/public/platform/landing');
+      if (!res.ok) throw new Error('platform landing unavailable');
+      const body = await parseInternalJson<PlatformLandingContent>(res);
+      return normalizePlatformLanding(body.data);
+    } catch {
+      return DEFAULT_PLATFORM_LANDING;
+    }
+  },
+);
 
-export async function tenantExists(subdomain: string): Promise<boolean> {
+export const tenantExists = cache(async (subdomain: string): Promise<boolean> => {
   const res = await fetchInternal(`/public/tenant?tenant=${subdomain}`);
   return res.ok;
-}
+});
 
 export async function loadTenantMarketingContext(
   tenant: string,
@@ -121,7 +125,11 @@ export function resolvePlatformLoginUrl(host: string): string {
     : platformSiteUrl(ROUTES.PLATFORM_LOGIN);
 }
 
-export async function buildMarketingMetadata(host: string): Promise<Metadata> {
+export async function buildMarketingMetadata(
+  host: string,
+  locale = 'mn',
+): Promise<Metadata> {
+  const origin = requestOrigin(host);
   const ctx = resolveHostContext(host);
   const subdomain = ctx.subdomain;
   const showPlatform =
@@ -131,10 +139,7 @@ export async function buildMarketingMetadata(host: string): Promise<Metadata> {
 
   if (showPlatform) {
     const content = await loadPlatformLanding();
-    return {
-      title: content.heroTitle,
-      description: content.heroSubtitle,
-    };
+    return platformLandingSeo(content, origin, locale, 'Barberly');
   }
 
   const data = await loadTenantMarketingContext(subdomain);
@@ -143,11 +148,14 @@ export async function buildMarketingMetadata(host: string): Promise<Metadata> {
     ...(data.settings?.landingContent ?? {}),
   };
 
-  return {
+  return buildPageSeoMetadata({
     title: data.name,
     description:
       landing.heroTagline ??
       landing.aboutDescription ??
       'Barbershop booking',
-  };
+    origin,
+    locale,
+    siteName: data.name,
+  });
 }

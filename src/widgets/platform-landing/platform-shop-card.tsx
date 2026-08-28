@@ -1,21 +1,18 @@
-'use client';
-
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { ArrowUpRight } from 'lucide-react';
 import type { PublicShopCard } from '@/entities/tenant';
 import { buildBrandHeroPalette } from '@/shared/lib/marketing/brand-hero-palette';
-import { tenantSiteUrl } from '@/shared/lib/tenant-url';
 import { TiltStage } from '@/shared/ui/marketing';
 
 interface PlatformShopCardProps {
   shop: PublicShopCard;
 }
 
-export function PlatformShopCard({ shop }: PlatformShopCardProps) {
-  const t = useTranslations('marketing.platform');
+export async function PlatformShopCard({ shop }: PlatformShopCardProps) {
+  const t = await getTranslations('marketing.platform');
   const palette = buildBrandHeroPalette(shop.brandColor);
-  const href = tenantSiteUrl(shop.subdomain);
+  const href = shop.href;
   const hostLabel = `${shop.subdomain}.barberly.mn`;
 
   return (
@@ -36,7 +33,7 @@ export function PlatformShopCard({ shop }: PlatformShopCardProps) {
           {shop.bannerUrl ? (
             <Image
               src={shop.bannerUrl}
-              alt=""
+              alt={`${shop.name} landing`}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-105"
               unoptimized
@@ -53,7 +50,7 @@ export function PlatformShopCard({ shop }: PlatformShopCardProps) {
             {shop.logoUrl ? (
               <Image
                 src={shop.logoUrl}
-                alt=""
+                alt={`${shop.name} logo`}
                 width={88}
                 height={24}
                 className="mb-2 h-6 w-auto object-contain"

@@ -17,8 +17,15 @@ export async function ensureCsrfToken(): Promise<string> {
   if (existing) return existing;
 
   const response = await fetch('/api/auth/csrf', { credentials: 'include' });
-  const envelope = (await response.json()) as { data: { token: string } };
-  return envelope.data.token;
+  if (!response.ok) {
+    throw new Error('CSRF token unavailable');
+  }
+  const envelope = (await response.json()) as { data?: { token?: string } };
+  const token = envelope.data?.token;
+  if (!token) {
+    throw new Error('CSRF token unavailable');
+  }
+  return token;
 }
 
 export function csrfHeaders(): Record<string, string> {

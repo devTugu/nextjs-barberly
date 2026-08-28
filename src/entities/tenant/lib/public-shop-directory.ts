@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { fetchInternal, parseInternalJson } from '@/shared/lib/internal-api';
 import { tenantSiteUrlForHost } from '@/shared/lib/tenant-url';
 import type { PublicShopCard, PublicDirectoryItem } from '../types/public-shop';
@@ -89,18 +90,18 @@ async function hydrateShop(
   }
 }
 
-export async function loadPublicShopDirectory(
-  host: string,
-): Promise<PublicShopCard[]> {
-  let raw: unknown = null;
-  for (const path of DIRECTORY_PATHS) {
-    raw = await tryLoadDirectory(path);
-    if (raw) break;
-  }
-  const items = selectShowcaseShops(
-    extractDirectoryList(raw).map(toDirectoryItem).filter(
-      (item): item is PublicDirectoryItem => item !== null,
-    ),
-  );
-  return mapInBatches(items, HYDRATE_BATCH, (item) => hydrateShop(item, host));
-}
+export const loadPublicShopDirectory = cache(
+  async (host: string): Promise<PublicShopCard[]> => {
+    let raw: unknown = null;
+    for (const path of DIRECTORY_PATHS) {
+      raw = await tryLoadDirectory(path);
+      if (raw) break;
+    }
+    const items = selectShowcaseShops(
+      extractDirectoryList(raw).map(toDirectoryItem).filter(
+        (item): item is PublicDirectoryItem => item !== null,
+      ),
+    );
+    return mapInBatches(items, HYDRATE_BATCH, (item) => hydrateShop(item, host));
+  },
+);

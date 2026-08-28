@@ -6,6 +6,7 @@ export type {
 export type {
   TenantLandingContent,
   PlatformLandingContent,
+  PlatformLandingFeature,
   PlatformTestimonial,
   PlatformPricePlan,
   PlatformContactInfo,
@@ -32,6 +33,7 @@ export {
   resolvePlatformLoginUrl,
   tenantExists,
 } from './lib/marketing-page-data';
+export { buildPlatformJsonLd } from './lib/marketing-metadata';
 export type {
   PublicService,
   PublicTenantSettings,
