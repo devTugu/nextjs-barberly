@@ -110,7 +110,11 @@ export function BookReviewStep() {
           <div className="flex justify-between gap-3">
             <dt className="text-muted-foreground">{t('pickDateTime')}</dt>
             <dd className="font-medium">
-              {formatBookingDateTime(draft.selectedSlot.startAtUtc, locale)}
+              {formatBookingDateTime(
+                draft.selectedSlot.startAtUtc,
+                locale,
+                draft.timezone,
+              )}
             </dd>
           </div>
         ) : null}

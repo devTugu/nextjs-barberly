@@ -88,7 +88,7 @@ export function BookSlotStep() {
 
   const onContinue = () => {
     if (!selectedSlot) return;
-    writeBookingDraft({ selectedSlot, date });
+    writeBookingDraft({ selectedSlot, date, timezone });
     router.push(ROUTES.BOOK_REVIEW);
   };
 

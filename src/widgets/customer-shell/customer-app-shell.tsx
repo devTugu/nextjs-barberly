@@ -39,7 +39,9 @@ export function CustomerAppShell({
             : 'mx-auto flex min-h-svh w-full max-w-lg flex-col'
         }
       >
-        {showNav ? <CustomerPushPermissionBanner /> : null}
+        {showNav && pathname === ROUTES.USER_PROFILE ? (
+          <CustomerPushPermissionBanner />
+        ) : null}
         {children}
       </div>
       {showNav ? <CustomerBottomNav /> : null}

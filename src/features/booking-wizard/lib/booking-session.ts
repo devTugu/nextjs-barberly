@@ -28,6 +28,7 @@ export interface BookingDraft {
   phone: string;
   staffName: string;
   serviceNames: string[];
+  timezone: string;
   payment: {
     paymentId: number;
     invoiceId: string;
@@ -49,6 +50,7 @@ const emptyDraft = (): BookingDraft => ({
   phone: '',
   staffName: '',
   serviceNames: [],
+  timezone: 'UTC',
   payment: null,
 });
 
