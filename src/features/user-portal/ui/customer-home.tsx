@@ -1,54 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, CalendarPlus } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useCancelPreview,
   useReschedulePreview,
 } from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
-import { brandPrimaryButtonClass } from '@/shared/lib/brand-styles';
-import { cn } from '@/shared/lib/utils';
-import { getInitials } from '@/entities/booking';
 import { Button } from '@/shared/ui/button';
 import { BookingStatusBadge } from './booking-status-badge';
-
-interface CustomerHomeHeaderProps {
-  name: string | null;
-}
-
-export function CustomerHomeHeader({ name }: CustomerHomeHeaderProps) {
-  const t = useTranslations('customerShell');
-  const displayName = name?.trim() || t('guest');
-  const initials = getInitials(displayName);
-
-  return (
-    <header className="space-y-4 px-4 pt-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-full bg-[var(--brand-primary,#f97316)] text-sm font-semibold text-white">
-            {initials}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">{t('greeting')}</p>
-            <p className="font-semibold">{displayName}</p>
-          </div>
-        </div>
-      </div>
-
-      <Button
-        asChild
-        className={cn('min-h-12 w-full rounded-2xl text-base font-semibold shadow-lg', brandPrimaryButtonClass)}
-      >
-        <Link href={ROUTES.BOOK}>
-          <CalendarPlus className="mr-2 size-5" />
-          {t('bookNew')}
-        </Link>
-      </Button>
-    </header>
-  );
-}
 
 interface CustomerBookingCardProps {
   id: number;

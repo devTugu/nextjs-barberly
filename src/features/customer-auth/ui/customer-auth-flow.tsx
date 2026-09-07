@@ -24,7 +24,7 @@ export interface CustomerAuthFlowProps {
 
 export function CustomerAuthFlow({
   tenant,
-  redirectTo = ROUTES.BOOK,
+  redirectTo = ROUTES.USER_DASHBOARD,
   onComplete,
   initialStep = 'phone',
   className,

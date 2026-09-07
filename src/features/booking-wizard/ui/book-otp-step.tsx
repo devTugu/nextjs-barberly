@@ -118,9 +118,8 @@ export function BookOtpStep() {
 
   return (
     <BookingWizardShell
-      step={4}
       title={t('otp.title')}
-      backHref={ROUTES.BOOK_SLOT}
+      backHref={ROUTES.BOOK_REVIEW}
       footer={footer}
     >
       {error ? (

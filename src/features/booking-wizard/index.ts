@@ -5,5 +5,6 @@ export { BookStaffStep } from './ui/book-staff-step';
 export { BookSlotStep } from './ui/book-slot-step';
 export { BookOtpStep } from './ui/book-otp-step';
 export { BookPayStep } from './ui/book-pay-step';
+export { BookReviewStep } from './ui/book-review-step';
 export { BookingServicesSummary } from './ui/booking-services-summary';
 export { clearBookingDraft } from './lib/booking-session';

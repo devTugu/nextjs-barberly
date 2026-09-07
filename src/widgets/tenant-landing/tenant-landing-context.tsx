@@ -58,12 +58,12 @@ async function resolveBookEntryPath(currentTenant: string): Promise<string> {
       return ROUTES.BOOK_BRANCH;
     }
     if (bookable.length === 1 && bookable[0]!.subdomain !== currentTenant) {
-      return tenantSiteUrl(bookable[0]!.subdomain, ROUTES.BOOK);
+      return tenantSiteUrl(bookable[0]!.subdomain, ROUTES.USER_DASHBOARD);
     }
   } catch {
-    /* fall through to local book */
+    /* fall through to local dashboard */
   }
-  return ROUTES.BOOK;
+  return ROUTES.USER_DASHBOARD;
 }
 
 interface TenantLandingShellProps {
@@ -79,7 +79,9 @@ export function TenantLandingShell({ children }: TenantLandingShellProps) {
   const [authInitialStep, setAuthInitialStep] = useState<'phone' | 'name'>(
     'phone',
   );
-  const [pendingBookPath, setPendingBookPath] = useState<string>(ROUTES.BOOK);
+  const [pendingBookPath, setPendingBookPath] = useState<string>(
+    ROUTES.USER_DASHBOARD,
+  );
 
   const refreshSession = useCallback(async () => {
     const next = await fetchCustomerSession(tenant);

@@ -162,7 +162,7 @@ export function BookPayStep() {
   const amount = payment?.amount ?? depositAmount;
 
   return (
-    <BookingWizardShell step={5} title={t('pay.title')} backHref={ROUTES.BOOK_OTP}>
+    <BookingWizardShell title={t('pay.title')} backHref={ROUTES.BOOK_REVIEW}>
       {error ? (
         <div className="mb-4 space-y-2">
           <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -188,9 +188,15 @@ export function BookPayStep() {
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-border/60 bg-card p-4">
+      <div className="rounded-[1.75rem] border border-border bg-card p-5">
         <p className="text-sm text-muted-foreground">{t('pay.amount')}</p>
-        <p className="mt-1 text-3xl font-bold">{formatMnt(amount, locale)}</p>
+        <p className="mt-1 text-4xl font-semibold tracking-tight">
+          {formatMnt(amount, locale)}
+        </p>
+        <div className="mt-4 rounded-2xl border border-[var(--brand-primary,#3b82f6)] bg-[var(--brand-primary,#3b82f6)]/5 p-3">
+          <p className="text-sm font-semibold">{t('qpay')}</p>
+          <p className="text-xs text-muted-foreground">{t('paySecure')}</p>
+        </div>
         {draft.booking ? (
           <div className="mt-3 space-y-1 text-sm text-muted-foreground">
             <p>
@@ -247,9 +253,9 @@ export function BookPayStep() {
               <Button
                 onClick={simulatePay}
                 disabled={loading}
-                className="min-h-11 w-full rounded-xl"
+                className="min-h-12 w-full rounded-2xl"
               >
-                {t('pay.simulate')}
+                {t('makePayment')}
               </Button>
             ) : null}
           </div>

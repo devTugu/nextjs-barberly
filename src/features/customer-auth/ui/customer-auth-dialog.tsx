@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
@@ -24,9 +25,10 @@ export function CustomerAuthDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-2xl border-border bg-card text-card-foreground">
+      <DialogContent className="max-w-md rounded-3xl border-border bg-card text-card-foreground">
         <DialogHeader className="sr-only">
           <DialogTitle>{t('signInTitle')}</DialogTitle>
+          <DialogDescription>{t('signInSubtitle')}</DialogDescription>
         </DialogHeader>
         <CustomerAuthFlow
           key={`${open}-${flowProps.initialStep ?? 'phone'}`}

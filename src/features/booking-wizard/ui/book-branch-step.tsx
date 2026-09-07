@@ -49,14 +49,14 @@ export function BookBranchStep() {
 
   if (isLoading || bookable.length <= 1) {
     return (
-      <BookingWizardShell step={0} title={t('branch.title')} backHref="/">
+      <BookingWizardShell title={t('branch.title')} backHref="/">
         <p className="text-center text-muted-foreground">{t('branch.loading')}</p>
       </BookingWizardShell>
     );
   }
 
   return (
-    <BookingWizardShell step={0} title={t('branch.title')} backHref="/">
+    <BookingWizardShell title={t('branch.title')} backHref="/">
       <p className="mb-4 text-sm text-muted-foreground">{t('branch.subtitle')}</p>
       <ul className="space-y-3">
         {bookable.map((branch) => {

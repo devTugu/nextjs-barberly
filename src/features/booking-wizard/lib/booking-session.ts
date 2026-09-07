@@ -17,6 +17,7 @@ export interface BookingDraft {
     startAtUtc: string;
     lockExpiresAt?: string | null;
     endAtUtc?: string;
+    customerId?: number | null;
     services?: Array<{
       serviceId: number;
       serviceName: string;
@@ -25,6 +26,8 @@ export interface BookingDraft {
     }>;
   } | null;
   phone: string;
+  staffName: string;
+  serviceNames: string[];
   payment: {
     paymentId: number;
     invoiceId: string;
@@ -44,6 +47,8 @@ const emptyDraft = (): BookingDraft => ({
   selectedSlot: null,
   booking: null,
   phone: '',
+  staffName: '',
+  serviceNames: [],
   payment: null,
 });
 

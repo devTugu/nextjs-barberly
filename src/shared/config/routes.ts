@@ -8,6 +8,7 @@ export const BOOK_ROUTES = {
   BOOK_BRANCH: '/book/branch',
   BOOK_STAFF: '/book/staff',
   BOOK_SLOT: '/book/slot',
+  BOOK_REVIEW: '/book/review',
   BOOK_OTP: '/book/otp',
   BOOK_PAY: '/book/pay',
   BOOK_CONFIRM: '/book/confirm',

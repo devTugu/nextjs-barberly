@@ -3,16 +3,17 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { Check } from 'lucide-react';
 import { publicGet } from '@/shared/lib/public-api';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { clearBookingDraft } from '@/features/booking-wizard';
-import { BookingServicesSummary } from '@/features/booking-wizard';
-import { LocaleSwitcher } from '@/shared/i18n/locale-switcher';
+import { formatBookingDateTime, formatMnt, serviceLabel } from '@/entities/booking';
 import { PageLoading } from '@/shared/ui/page-states';
 import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { brandPrimaryButtonClass } from '@/shared/lib/brand-styles';
+import { cn } from '@/shared/lib/utils';
 import type { PublicBooking } from '@/entities/booking';
 
 type BookingStatus =
@@ -24,7 +25,7 @@ type BookingStatus =
 
 function resolveTitleKey(status: BookingStatus | null): string {
   if (!status) return 'waiting';
-  if (status === 'confirmed') return 'title';
+  if (status === 'confirmed') return 'successTitle';
   if (status === 'pending_payment') return 'waiting';
   if (status === 'expired') return 'expired';
   if (status === 'cancelled') return 'cancelled';
@@ -33,6 +34,7 @@ function resolveTitleKey(status: BookingStatus | null): string {
 
 export default function BookConfirmPage() {
   const t = useTranslations('bookingConfirm');
+  const locale = useLocale();
   const params = useParams();
   const tenant = useTenantSubdomain();
   const bookingId = params.bookingId as string;
@@ -41,7 +43,6 @@ export default function BookConfirmPage() {
 
   useEffect(() => {
     if (!bookingId) return;
-
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval> | undefined;
 
@@ -49,17 +50,13 @@ export default function BookConfirmPage() {
       try {
         const data = await publicGet<PublicBooking>(`/bookings/${bookingId}`, tenant);
         if (cancelled) return;
-
         setBooking(data);
         const next = data.status as BookingStatus;
         setStatus(
-          ['confirmed', 'pending_payment', 'expired', 'cancelled'].includes(
-            data.status,
-          )
+          ['confirmed', 'pending_payment', 'expired', 'cancelled'].includes(data.status)
             ? next
             : 'unknown',
         );
-
         if (data.status === 'confirmed') clearBookingDraft();
         if (data.status !== 'pending_payment' && intervalId) {
           clearInterval(intervalId);
@@ -72,58 +69,51 @@ export default function BookConfirmPage() {
 
     void fetchBooking();
     intervalId = setInterval(() => void fetchBooking(), 3000);
-
     return () => {
       cancelled = true;
       if (intervalId) clearInterval(intervalId);
     };
   }, [bookingId, tenant]);
 
-  const calendarUrl =
-    status === 'confirmed'
-      ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Barberly+Booking&details=Booking+%23${bookingId}`
-      : null;
-
   const titleKey = resolveTitleKey(status);
 
   return (
-    <div className="mx-auto max-w-md space-y-4 p-6">
-      <div className="flex justify-end">
-        <LocaleSwitcher />
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t(titleKey)}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!status ? <PageLoading rows={1} /> : null}
-          {status === 'confirmed' ? (
-            <p className="text-muted-foreground text-sm">{t('success')}</p>
-          ) : null}
-          {booking?.services?.length ? (
-            <BookingServicesSummary
-              services={booking.services}
-              startAtUtc={booking.startAtUtc}
-              totalPrice={booking.totalPrice}
-            />
-          ) : null}
-          <div className="grid gap-2">
-            {calendarUrl ? (
-              <Button variant="outline" asChild className="min-h-11">
-                <a href={calendarUrl} target="_blank" rel="noopener noreferrer">
-                  {t('addToCalendar')}
-                </a>
-              </Button>
-            ) : null}
-            <Button asChild className="min-h-11">
-              <Link href={ROUTES.USER_DASHBOARD}>{t('viewBookings')}</Link>
-            </Button>
-            <Button variant="secondary" asChild className="min-h-11">
-              <Link href={ROUTES.BOOK}>{t('bookAnother')}</Link>
-            </Button>
+    <div className="flex min-h-svh flex-col px-5 pb-8 pt-10">
+      <div className="flex flex-1 flex-col items-center text-center">
+        {status === 'confirmed' ? (
+          <div className="relative mb-6 flex size-24 items-center justify-center rounded-full bg-[var(--brand-primary,#3b82f6)] text-white">
+            <Check className="size-12" strokeWidth={2.5} />
           </div>
-        </CardContent>
-      </Card>
+        ) : null}
+        <h1 className="text-2xl font-semibold">{t(titleKey)}</h1>
+        {status === 'confirmed' ? (
+          <p className="mt-2 max-w-xs text-sm text-muted-foreground">{t('success')}</p>
+        ) : null}
+        {!status ? <PageLoading rows={1} /> : null}
+
+        {booking ? (
+          <div className="mt-8 w-full rounded-3xl border bg-card p-4 text-left text-sm">
+            <p className="font-medium">
+              {serviceLabel(booking.services) || `#${booking.id}`}
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              {formatBookingDateTime(booking.startAtUtc, locale)}
+            </p>
+            <p className="mt-3 text-lg font-semibold">
+              {formatMnt(booking.totalPrice, locale)}
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="grid gap-2">
+        <Button asChild className={cn('min-h-12 rounded-2xl', brandPrimaryButtonClass)}>
+          <Link href={ROUTES.USER_DASHBOARD}>{t('view')}</Link>
+        </Button>
+        <Button asChild variant="outline" className="min-h-12 rounded-2xl">
+          <Link href={ROUTES.USER_DASHBOARD}>{t('toHome')}</Link>
+        </Button>
+      </div>
     </div>
   );
 }
