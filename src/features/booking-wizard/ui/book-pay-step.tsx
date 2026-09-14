@@ -1,22 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { publicGet, publicPost } from '@/shared/lib/public-api';
-import type { BookingPayResult } from '@/entities/booking';
+import {
+  computeLockCountdown,
+  formatMnt,
+  resolveBalanceDue,
+  resolveDepositAmount,
+} from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
-import { env } from '@/shared/config/env';
+import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import {
   clearBookingDraft,
   readBookingDraft,
-  writeBookingDraft,
 } from '../lib/booking-session';
-import { formatMnt } from '@/entities/booking';
+import { simulateQpayPaymentUseCase } from '../model/payment-use-cases';
+import { useDepositPaymentFlow } from '../model/use-deposit-payment-flow';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { BookingServicesSummary } from './booking-services-summary';
 import { Button } from '@/shared/ui/button';
@@ -26,9 +30,7 @@ const QrCode = dynamic(
   { ssr: false },
 );
 
-const simulateEnabled =
-  process.env.NEXT_PUBLIC_QPAY_SIMULATE_ENABLED === 'true' ||
-  env.APP_ENV !== 'production';
+const simulateEnabled = isQpaySimulateAllowed();
 
 export function BookPayStep() {
   const router = useRouter();
@@ -36,10 +38,6 @@ export function BookPayStep() {
   const locale = useLocale();
   const t = useTranslations('bookingWizard');
   const draft = readBookingDraft();
-  const [payment, setPayment] = useState(draft.payment);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [polling, setPolling] = useState(false);
   const [lockLabel, setLockLabel] = useState<string | null>(null);
 
   const handleLockExpired = () => {
@@ -48,98 +46,61 @@ export function BookPayStep() {
     router.replace(ROUTES.BOOK_SLOT);
   };
 
-  useEffect(() => {
-    if (!draft.booking) {
-      router.replace(ROUTES.BOOK);
-      return;
-    }
-    if (payment) return;
+  const bookingId = draft.booking?.id ?? null;
+  const totalPrice = draft.booking?.totalPrice ?? 0;
 
-    void (async () => {
-      setLoading(true);
-      try {
-        const result = await publicPost<BookingPayResult>(
-          `/bookings/${draft.booking!.id}/pay`,
-          tenant,
-          { kind: 'deposit' },
-        );
-        const next = {
-          paymentId: result.paymentId,
-          invoiceId: result.invoiceId,
-          amount: result.amount ?? draft.booking!.totalPrice,
-          qrText: result.qrText,
-          qrImage: result.qrImage,
-          urls: result.urls ?? [],
-        };
-        setPayment(next);
-        writeBookingDraft({ payment: next });
-      } catch (e) {
-        setError(e instanceof Error ? e.message : t('errors.paymentFailed'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [draft.booking, payment, router, t, tenant]);
+  const adapters = useMemo(
+    () => ({
+      onConfirmed: (id: number) => {
+        router.push(`${ROUTES.BOOK_CONFIRM}/${id}`);
+      },
+      onExpired: handleLockExpired,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [router, t],
+  );
+
+  const {
+    payment,
+    loading,
+    polling,
+    error,
+    retry,
+    setError,
+    setLoading,
+  } = useDepositPaymentFlow(tenant, bookingId, totalPrice, adapters);
+
+  useEffect(() => {
+    if (!draft.booking) router.replace(ROUTES.BOOK);
+  }, [draft.booking, router]);
 
   useEffect(() => {
     const expires = draft.booking?.lockExpiresAt;
     if (!expires) return;
     let id = 0;
     const tick = () => {
-      const ms = new Date(expires).getTime() - Date.now();
-      if (ms <= 0) {
+      const countdown = computeLockCountdown(expires, Date.now());
+      if (countdown.expired) {
         window.clearInterval(id);
         setLockLabel(t('pay.lockExpired'));
         handleLockExpired();
         return;
       }
-      const min = Math.floor(ms / 60_000);
-      const sec = Math.floor((ms % 60_000) / 1000);
-      setLockLabel(
-        t('pay.lockExpires', { time: `${min}:${String(sec).padStart(2, '0')}` }),
-      );
+      setLockLabel(t('pay.lockExpires', { time: countdown.label }));
     };
     tick();
     id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [draft.booking?.lockExpiresAt, router, t]);
-
-  useEffect(() => {
-    if (!draft.booking || !payment) return;
-    setPolling(true);
-    const id = window.setInterval(async () => {
-      try {
-        const booking = await publicGet<{ status: string }>(
-          `/bookings/${draft.booking!.id}`,
-          tenant,
-        );
-        if (booking.status === 'confirmed') {
-          window.clearInterval(id);
-          router.push(`${ROUTES.BOOK_CONFIRM}/${draft.booking!.id}`);
-        }
-        if (booking.status === 'expired') {
-          window.clearInterval(id);
-          handleLockExpired();
-        }
-      } catch {
-        /* keep polling */
-      }
-    }, 3000);
-    return () => {
-      window.clearInterval(id);
-      setPolling(false);
-    };
-  }, [draft.booking, payment, router, tenant]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.booking?.lockExpiresAt, t]);
 
   const simulatePay = async () => {
     if (!payment || !draft.booking) return;
     setLoading(true);
     try {
-      await publicPost('/webhooks/qpay/simulate', tenant, {
-        invoice_id: payment.invoiceId,
-        payment_id: `sim-${Date.now()}`,
-        payment_status: 'PAID',
-        payment_amount: payment.amount,
+      await simulateQpayPaymentUseCase(tenant, {
+        invoiceId: payment.invoiceId,
+        amount: payment.amount,
       });
       router.push(`${ROUTES.BOOK_CONFIRM}/${draft.booking.id}`);
     } catch (e) {
@@ -149,16 +110,18 @@ export function BookPayStep() {
     }
   };
 
-  const retryPayment = () => {
-    setPayment(null);
-    writeBookingDraft({ payment: null });
-  };
+  if (!draft.booking) return null;
 
-  const depositAmount =
-    draft.booking?.depositAmount ?? payment?.amount ?? draft.booking?.totalPrice ?? 0;
-  const balanceDue =
-    draft.booking?.balanceDue ??
-    Math.max(0, (draft.booking?.totalPrice ?? 0) - depositAmount);
+  const depositAmount = resolveDepositAmount({
+    depositAmount: draft.booking.depositAmount,
+    paymentAmount: payment?.amount,
+    totalPrice: draft.booking.totalPrice,
+  });
+  const balanceDue = resolveBalanceDue({
+    balanceDue: draft.booking.balanceDue,
+    totalPrice: draft.booking.totalPrice,
+    depositAmount,
+  });
   const amount = payment?.amount ?? depositAmount;
 
   return (
@@ -168,7 +131,7 @@ export function BookPayStep() {
           <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </p>
-          <Button variant="outline" size="sm" onClick={retryPayment}>
+          <Button variant="outline" size="sm" onClick={retry}>
             {t('pay.retry')}
           </Button>
         </div>
@@ -178,7 +141,7 @@ export function BookPayStep() {
         <p className="mb-4 text-sm text-muted-foreground">{lockLabel}</p>
       ) : null}
 
-      {draft.booking?.services?.length ? (
+      {draft.booking.services?.length ? (
         <div className="mb-4">
           <BookingServicesSummary
             services={draft.booking.services}
@@ -191,17 +154,17 @@ export function BookPayStep() {
       <div className="rounded-2xl border border-border/60 bg-card p-4">
         <p className="text-sm text-muted-foreground">{t('pay.amount')}</p>
         <p className="mt-1 text-3xl font-bold">{formatMnt(amount, locale)}</p>
-        {draft.booking ? (
-          <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-            <p>
-              {t('pay.depositDue')}: {formatMnt(depositAmount, locale)}
-            </p>
-            <p>
-              {t('pay.balanceDue')}: {formatMnt(balanceDue, locale)}
-            </p>
-            <p>{t('pay.totalLabel')}: {formatMnt(draft.booking.totalPrice, locale)}</p>
-          </div>
-        ) : null}
+        <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+          <p>
+            {t('pay.depositDue')}: {formatMnt(depositAmount, locale)}
+          </p>
+          <p>
+            {t('pay.balanceDue')}: {formatMnt(balanceDue, locale)}
+          </p>
+          <p>
+            {t('pay.totalLabel')}: {formatMnt(draft.booking.totalPrice, locale)}
+          </p>
+        </div>
 
         {loading && !payment ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -245,7 +208,7 @@ export function BookPayStep() {
             ) : null}
             {simulateEnabled ? (
               <Button
-                onClick={simulatePay}
+                onClick={() => void simulatePay()}
                 disabled={loading}
                 className="min-h-11 w-full rounded-xl"
               >

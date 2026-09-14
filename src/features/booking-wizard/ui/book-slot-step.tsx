@@ -4,16 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
-import { publicGet, publicPost } from '@/shared/lib/public-api';
+import { publicGet } from '@/shared/lib/public-api';
 import { isPublicApiError } from '@/shared/lib/public-api-error';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { PageEmpty } from '@/shared/ui/page-states';
 import { readBookingDraft, writeBookingDraft } from '../lib/booking-session';
-import { sumServicePrice } from '@/entities/booking';
-import { formatMnt } from '@/entities/booking';
-import { fetchCustomerSession } from '@/entities/customer';
-import { attachCustomerBooking } from '@/entities/customer';
+import {
+  loadAvailableSlotsUseCase,
+  lockSlotAndRouteUseCase,
+} from '../model/lock-slot-use-case';
+import { sumServicePrice, formatMnt } from '@/entities/booking';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { DateStrip } from './date-strip';
 import { TimeSlotGrid, type SlotSelection } from './time-slot-grid';
@@ -72,31 +73,16 @@ export function BookSlotStep() {
     setError(null);
     setSelectedSlot(null);
     try {
-      const query: Record<string, string> = {
+      const result = await loadAvailableSlotsUseCase({
+        tenant,
         date,
-        durationMinutes: String(duration),
-      };
-      if (serviceIdsKey) {
-        query.serviceIds = serviceIdsKey;
-      }
-      if (anyStaff) {
-        query.anyStaff = 'true';
-      } else if (selectedStaffId) {
-        query.staffId = String(selectedStaffId);
-      }
-      const result = await publicGet<{
-        staffId?: number;
-        anyStaff?: boolean;
-        timezone: string;
-        slots: Array<{ startUtc: string; staffId?: number }>;
-      }>('/available-slots', tenant, query);
-      setTimezone(result.timezone ?? 'UTC');
-      setSlots(
-        (result.slots ?? []).map((slot) => ({
-          startAtUtc: slot.startUtc,
-          staffId: slot.staffId ?? result.staffId ?? selectedStaffId!,
-        })),
-      );
+        durationMinutes: duration,
+        serviceIds: draft.serviceIds,
+        anyStaff,
+        selectedStaffId,
+      });
+      setTimezone(result.timezone);
+      setSlots(result.slots);
     } catch (e) {
       const code = isPublicApiError(e) ? e.code : 'UNKNOWN';
       const message = e instanceof Error ? e.message : '';
@@ -110,7 +96,7 @@ export function BookSlotStep() {
     } finally {
       setLoadingSlots(false);
     }
-  }, [anyStaff, date, duration, selectedStaffId, serviceIdsKey, tenant]);
+  }, [anyStaff, date, duration, draft.serviceIds, selectedStaffId, t, tenant]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -129,24 +115,8 @@ export function BookSlotStep() {
     setLocking(true);
     setError(null);
     try {
-      const locked = await publicPost<{
-        id: number;
-        status: string;
-        totalPrice: number;
-        depositAmount?: number;
-        balanceDue?: number;
-        remainingBalance?: number;
-        startAtUtc: string;
-        lockExpiresAt?: string | null;
-        endAtUtc?: string;
-        customerId?: number | null;
-        services?: Array<{
-          serviceId: number;
-          serviceName: string;
-          durationMinutes: number;
-          price: number;
-        }>;
-      }>('/bookings/lock', tenant, {
+      const { booking, route } = await lockSlotAndRouteUseCase({
+        tenant,
         serviceIds: draft.serviceIds,
         startAtUtc: selectedSlot.startAtUtc,
         staffId: selectedSlot.staffId,
@@ -154,18 +124,9 @@ export function BookSlotStep() {
       writeBookingDraft({
         selectedSlot,
         date,
-        booking: locked,
+        booking,
       });
-
-      const session = await fetchCustomerSession(tenant);
-      if (session && !session.needsProfile) {
-        if (!locked.customerId) {
-          await attachCustomerBooking(tenant, locked.id);
-        }
-        router.push(ROUTES.BOOK_PAY);
-      } else {
-        router.push(ROUTES.BOOK_OTP);
-      }
+      router.push(route === 'pay' ? ROUTES.BOOK_PAY : ROUTES.BOOK_OTP);
     } catch (e) {
       setError(
         isPublicApiError(e) && e.code === 'CONFLICT'

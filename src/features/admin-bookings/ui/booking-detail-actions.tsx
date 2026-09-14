@@ -5,12 +5,17 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   useBooking,
-  useCancelBooking,
+  canRecordOfflineSettlement,
+  canReopenOfflineSettlement,
+  isFullySettled,
+} from '@/entities/booking';
+import {
   useCompleteBooking,
+  useCancelBooking,
   useNoShowBooking,
   useOfflineSettlement,
   useReopenSettlement,
-} from '@/entities/booking';
+} from '../api/booking-mutations';
 import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
@@ -64,13 +69,17 @@ export function BookingDetailActions({ bookingId }: BookingDetailActionsProps) {
   if (!booking) return <p>{t('notFound')}</p>;
 
   const showActions = booking.status === 'confirmed' && canUpdate;
-  const isFullySettled = booking.paymentSettlementStatus === 'fully_settled';
-  const canSettleOffline = booking.remainingBalance > 0;
-  const canReopen =
-    isOwner &&
-    canUpdate &&
-    booking.status === 'completed' &&
-    booking.balanceRecordedOfflineAmount > 0;
+  const fullySettled = isFullySettled(booking.paymentSettlementStatus);
+  const canSettleOffline = canRecordOfflineSettlement({
+    status: booking.status,
+    remainingBalance: booking.remainingBalance,
+  });
+  const canReopen = canReopenOfflineSettlement({
+    status: booking.status,
+    balanceRecordedOfflineAmount: booking.balanceRecordedOfflineAmount,
+    isOwner,
+    canUpdate,
+  });
   const showPaymentStatus =
     booking.status === 'pending_payment' ||
     booking.status === 'confirmed' ||
@@ -167,10 +176,10 @@ export function BookingDetailActions({ bookingId }: BookingDetailActionsProps) {
             <Button
               size="lg"
               className="h-14 text-base"
-              disabled={isPending || !isFullySettled}
+              disabled={isPending || !fullySettled}
               onClick={() => setCompleteOpen(true)}
             >
-              {isFullySettled
+              {fullySettled
                 ? t('actionComplete')
                 : t('actionCompleteNeedsSettlement')}
             </Button>
@@ -197,13 +206,13 @@ export function BookingDetailActions({ bookingId }: BookingDetailActionsProps) {
               onOpenChange={setCompleteOpen}
               title={t('completeConfirmTitle')}
               description={
-                isFullySettled
+                fullySettled
                   ? t('completeConfirmDescription')
                   : t('completeRequiresSettlement')
               }
               confirmLabel={t('actionComplete')}
               pending={complete.isPending}
-              disabled={!isFullySettled}
+              disabled={!fullySettled}
               onConfirm={() =>
                 void run(() => complete.mutateAsync(booking.id), t('toastCompleted')).then(
                   (ok) => ok && setCompleteOpen(false),

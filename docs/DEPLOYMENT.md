@@ -67,7 +67,7 @@ Frontend exposes `GET /api/health` for load balancer probes.
 |------|---------|
 | QPay provider | Backend `QPAY_PROVIDER=qpay` with valid merchant credentials |
 | QPay callback | Public HTTPS webhook URL registered with QPay |
-| Dev simulate | `NEXT_PUBLIC_QPAY_SIMULATE_ENABLED=false` in production |
+| QPay simulate | Leave unset (or `false`) in production — BFF blocks simulate unless `NEXT_PUBLIC_QPAY_SIMULATE_ENABLED=true` |
 | Web push | Backend `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` + admin push subscription route |
 | Brand color | Run migration `1730000000024` (`tenant_settings.brand_color`) |
 | Permissions | Re-seed if new permissions added (`RUN_SEED=true` once, then `false`) |

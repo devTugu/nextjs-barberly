@@ -7,13 +7,18 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   type BookingOutput,
-  useCancelBooking,
+  canRecordOfflineSettlement,
+  canReopenOfflineSettlement,
+  isFullySettled,
+} from '@/entities/booking';
+import {
   useCompleteBooking,
-  useConfirmBooking,
+  useCancelBooking,
   useNoShowBooking,
+  useConfirmBooking,
   useOfflineSettlement,
   useReopenSettlement,
-} from '@/entities/booking';
+} from '../api/booking-mutations';
 import { useAuthPermissions } from '@/entities/session';
 import { PERMISSION_CODES } from '@/shared/config/permissions';
 import { getErrorMessage } from '@/shared/api';
@@ -51,13 +56,17 @@ export function BookingActionsMenu({ booking }: BookingActionsMenuProps) {
   const canUpdate = can(PERMISSION_CODES.BOOKING_UPDATE);
   const canRead = can(PERMISSION_CODES.BOOKING_READ);
 
-  const isFullySettled = booking.paymentSettlementStatus === 'fully_settled';
-  const canSettleOffline =
-    booking.status === 'confirmed' && booking.remainingBalance > 0;
-  const canReopen =
-    isOwner &&
-    booking.status === 'completed' &&
-    booking.balanceRecordedOfflineAmount > 0;
+  const fullySettled = isFullySettled(booking.paymentSettlementStatus);
+  const canSettleOffline = canRecordOfflineSettlement({
+    status: booking.status,
+    remainingBalance: booking.remainingBalance,
+  });
+  const canReopen = canReopenOfflineSettlement({
+    status: booking.status,
+    balanceRecordedOfflineAmount: booking.balanceRecordedOfflineAmount,
+    isOwner,
+    canUpdate: true,
+  });
 
   const isPending =
     complete.isPending ||
@@ -139,7 +148,7 @@ export function BookingActionsMenu({ booking }: BookingActionsMenuProps) {
     if (ok) setReopenOpen(false);
   };
 
-  const completeLabel = isFullySettled
+  const completeLabel = fullySettled
     ? t('actionComplete')
     : t('actionCompleteNeedsSettlement');
 
@@ -211,8 +220,8 @@ export function BookingActionsMenu({ booking }: BookingActionsMenuProps) {
           ) : null}
           {showComplete ? (
             <DropdownMenuItem
-              disabled={!isFullySettled}
-              onClick={() => isFullySettled && setCompleteOpen(true)}
+              disabled={!fullySettled}
+              onClick={() => fullySettled && setCompleteOpen(true)}
             >
               {completeLabel}
             </DropdownMenuItem>
@@ -242,13 +251,13 @@ export function BookingActionsMenu({ booking }: BookingActionsMenuProps) {
         onOpenChange={setCompleteOpen}
         title={t('completeConfirmTitle')}
         description={
-          isFullySettled
+          fullySettled
             ? t('completeConfirmDescription')
             : t('completeRequiresSettlement')
         }
         confirmLabel={t('actionComplete')}
         pending={complete.isPending}
-        disabled={!isFullySettled}
+        disabled={!fullySettled}
         onConfirm={() => void handleComplete()}
       />
       <BookingConfirmDialog

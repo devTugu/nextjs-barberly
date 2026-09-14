@@ -26,14 +26,6 @@ const bookingDraft = {
     ],
   },
   phone: '99119911',
-  payment: {
-    paymentId: 1,
-    invoiceId: 'test-invoice',
-    amount: 25000,
-    qrText: 'qpay-test',
-    qrImage: null,
-    urls: [],
-  },
 };
 
 test.describe('Customer portal', () => {
