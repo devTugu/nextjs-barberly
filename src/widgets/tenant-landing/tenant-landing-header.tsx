@@ -21,7 +21,13 @@ export function TenantLandingHeader({
   navItems,
 }: TenantLandingHeaderProps) {
   const t = useTranslations('home');
-  const { session, sessionLoading, handleBookClick } = useTenantLanding();
+  const {
+    session,
+    sessionLoading,
+    bookLoading,
+    handleBookClick,
+    handleSignInClick,
+  } = useTenantLanding();
 
   const isLoggedIn = Boolean(session && !session.needsProfile);
 
@@ -57,26 +63,36 @@ export function TenantLandingHeader({
           ))}
         </nav>
 
-        <div className="shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           {sessionLoading ? (
             <span className="text-xs text-muted-foreground">…</span>
           ) : isLoggedIn ? (
             <Link
               href={ROUTES.USER_DASHBOARD}
-              className="text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
+              className="hidden text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground sm:inline"
             >
               {t('myBookings')}
             </Link>
           ) : (
             <Button
               type="button"
+              variant="ghost"
               size="sm"
-              className={cn('rounded-xl text-xs font-semibold uppercase', brandPrimaryButtonClass)}
-              onClick={() => void handleBookClick()}
+              onClick={handleSignInClick}
+              className="hidden h-9 rounded-full px-3 text-xs uppercase tracking-wide sm:inline-flex"
             >
-              {t('bookAppointment')}
+              {t('signIn')}
             </Button>
           )}
+          <Button
+            type="button"
+            size="sm"
+            disabled={bookLoading}
+            className={cn('rounded-full text-xs font-semibold uppercase', brandPrimaryButtonClass)}
+            onClick={() => void handleBookClick()}
+          >
+            {bookLoading ? t('openingBook') : t('bookAppointment')}
+          </Button>
         </div>
       </div>
     </header>
