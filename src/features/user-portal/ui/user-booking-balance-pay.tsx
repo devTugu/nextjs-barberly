@@ -7,17 +7,16 @@ import { Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
+  awaitBalanceClearedUseCase,
+  formatMnt,
   publicBookingKeys,
-  type BookingPayResult,
-} from '@/entities/booking';
-import { formatMnt } from '@/entities/booking';
-import { Button } from '@/shared/ui/button';
-import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
-import {
-  pollBalanceClearedUseCase,
   simulateQpayPaymentUseCase,
   startBalancePaymentUseCase,
+  type BookingPayResult,
 } from '@/entities/booking';
+import { Button } from '@/shared/ui/button';
+import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
+import { isAbortError } from '@/shared/lib/abortable-wait';
 
 const simulateEnabled = isQpaySimulateAllowed();
 
@@ -59,24 +58,28 @@ export function UserBookingBalancePay({
 
   useEffect(() => {
     if (!payment) return;
+    const controller = new AbortController();
     setPolling(true);
-    const id = window.setInterval(async () => {
+
+    void (async () => {
       try {
-        const outcome = await pollBalanceClearedUseCase(tenant, bookingId);
-        if (outcome.kind === 'cleared') {
-          window.clearInterval(id);
-          queryClient.invalidateQueries({
-            queryKey: publicBookingKeys.detail(tenant, bookingId),
-          });
-          toast.success(t('payBalanceSuccess'));
-          setPayment(null);
-        }
-      } catch {
-        /* keep polling */
+        await awaitBalanceClearedUseCase(tenant, bookingId, {
+          signal: controller.signal,
+        });
+        queryClient.invalidateQueries({
+          queryKey: publicBookingKeys.detail(tenant, bookingId),
+        });
+        toast.success(t('payBalanceSuccess'));
+        setPayment(null);
+      } catch (e) {
+        if (isAbortError(e)) return;
+      } finally {
+        if (!controller.signal.aborted) setPolling(false);
       }
-    }, 3000);
+    })();
+
     return () => {
-      window.clearInterval(id);
+      controller.abort();
       setPolling(false);
     };
   }, [bookingId, payment, queryClient, t, tenant]);

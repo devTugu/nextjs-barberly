@@ -23,11 +23,19 @@ export {
   resolveDepositAmount,
 } from './lib/payment-amounts';
 export {
+  computeLockCountdown,
+  type LockCountdown,
+} from './lib/lock-countdown';
+export {
+  awaitBalanceClearedUseCase,
+  awaitDepositConfirmationUseCase,
   pollBalanceClearedUseCase,
   pollDepositConfirmationUseCase,
+  QpaySimulateDisabledError,
   simulateQpayPaymentUseCase,
   startBalancePaymentUseCase,
   startDepositPaymentUseCase,
+  type AwaitPaymentOptions,
   type BalancePollOutcome,
   type DepositPollOutcome,
 } from './lib/payment-use-cases';

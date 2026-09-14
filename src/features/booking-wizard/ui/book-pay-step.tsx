@@ -7,12 +7,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
+  computeLockCountdown,
   formatMnt,
   resolveBalanceDue,
   resolveDepositAmount,
 } from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
 import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
+import { isAbortError } from '@/shared/lib/abortable-wait';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import {
   clearBookingDraft,
@@ -20,7 +22,7 @@ import {
   type BookingPaymentSession,
 } from '../lib/booking-session';
 import {
-  pollDepositConfirmationUseCase,
+  awaitDepositConfirmationUseCase,
   simulateQpayPaymentUseCase,
   startDepositPaymentUseCase,
 } from '../model/payment-use-cases';
@@ -89,18 +91,14 @@ export function BookPayStep() {
     if (!expires) return;
     let id = 0;
     const tick = () => {
-      const ms = new Date(expires).getTime() - Date.now();
-      if (ms <= 0) {
+      const countdown = computeLockCountdown(expires, Date.now());
+      if (countdown.expired) {
         window.clearInterval(id);
         setLockLabel(t('pay.lockExpired'));
         handleLockExpired();
         return;
       }
-      const min = Math.floor(ms / 60_000);
-      const sec = Math.floor((ms % 60_000) / 1000);
-      setLockLabel(
-        t('pay.lockExpires', { time: `${min}:${String(sec).padStart(2, '0')}` }),
-      );
+      setLockLabel(t('pay.lockExpires', { time: countdown.label }));
     };
     tick();
     id = window.setInterval(tick, 1000);
@@ -109,27 +107,31 @@ export function BookPayStep() {
 
   useEffect(() => {
     if (!draft.booking || !payment) return;
+    const controller = new AbortController();
     setPolling(true);
-    const id = window.setInterval(async () => {
+
+    void (async () => {
       try {
-        const outcome = await pollDepositConfirmationUseCase(
+        const outcome = await awaitDepositConfirmationUseCase(
           tenant,
           draft.booking!.id,
+          { signal: controller.signal },
         );
-        if (outcome.kind === 'confirmed') {
-          window.clearInterval(id);
+        if (outcome === 'confirmed') {
           router.push(`${ROUTES.BOOK_CONFIRM}/${draft.booking!.id}`);
+          return;
         }
-        if (outcome.kind === 'expired') {
-          window.clearInterval(id);
-          handleLockExpired();
-        }
-      } catch {
-        /* keep polling */
+        handleLockExpired();
+      } catch (e) {
+        if (isAbortError(e)) return;
+        /* keep silent; user can retry via simulate / refresh */
+      } finally {
+        if (!controller.signal.aborted) setPolling(false);
       }
-    }, 3000);
+    })();
+
     return () => {
-      window.clearInterval(id);
+      controller.abort();
       setPolling(false);
     };
   }, [draft.booking, payment, router, tenant]);

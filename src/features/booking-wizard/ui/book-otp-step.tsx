@@ -9,6 +9,11 @@ import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import { fetchCustomerSession } from '@/entities/customer';
 import { readBookingDraft, writeBookingDraft } from '../lib/booking-session';
+import {
+  resolveOtpDevHint,
+  sendBookingOtpUseCase,
+  verifyBookingOtpUseCase,
+} from '../model/otp-use-case';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -47,23 +52,15 @@ export function BookOtpStep() {
     setError(null);
     writeBookingDraft({ phone });
     try {
-      const csrf = await import('@/shared/lib/csrf-client').then((m) =>
-        m.mutatingFetchHeaders(),
-      );
-      const res = await fetch(`/api/customer-auth/otp/verify?tenant=${tenant}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...(await csrf) },
-        body: JSON.stringify({
+      await verifyBookingOtpUseCase(
+        tenant,
+        {
           phone,
           code,
-          bookingId: draft.booking?.id,
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error?.message ?? t('errors.otpFailed'));
-      }
+          bookingId: draft.booking!.id,
+        },
+        { fallbackMessage: t('errors.otpFailed') },
+      );
       router.push(ROUTES.BOOK_PAY);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('errors.otpFailed'));
@@ -78,26 +75,13 @@ export function BookOtpStep() {
     setOtpHint(null);
     writeBookingDraft({ phone });
     try {
-      const csrf = await import('@/shared/lib/csrf-client').then((m) =>
-        m.mutatingFetchHeaders(),
-      );
-      const res = await fetch(`/api/customer-auth/otp/send?tenant=${tenant}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...(await csrf) },
-        body: JSON.stringify({ phone }),
+      const result = await sendBookingOtpUseCase(tenant, phone, {
+        fallbackMessage: t('errors.otpFailed'),
       });
-      const body = await res.json();
-      if (!res.ok) {
-        throw new Error(body.error?.message ?? t('errors.otpFailed'));
-      }
-      const data = body.data as { devCode?: string; devBypassCode?: string };
-      if (data.devCode) {
-        setOtp(data.devCode);
-        setOtpHint(t('otp.devHint', { code: data.devCode }));
-      } else if (data.devBypassCode) {
-        setOtp(data.devBypassCode);
-        setOtpHint(t('otp.devHint', { code: data.devBypassCode }));
+      const hint = resolveOtpDevHint(result);
+      if (hint) {
+        setOtp(hint);
+        setOtpHint(t('otp.devHint', { code: hint }));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('errors.otpFailed'));
