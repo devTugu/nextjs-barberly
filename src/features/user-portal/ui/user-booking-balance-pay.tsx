@@ -11,9 +11,15 @@ import {
   type BookingPayResult,
 } from '@/entities/booking';
 import { formatMnt } from '@/entities/booking';
-import { publicGet, publicPost } from '@/shared/lib/public-api';
 import { Button } from '@/shared/ui/button';
-import { simulateEnabled } from './user-booking-shared';
+import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
+import {
+  pollBalanceClearedUseCase,
+  simulateQpayPaymentUseCase,
+  startBalancePaymentUseCase,
+} from '@/entities/booking';
+
+const simulateEnabled = isQpaySimulateAllowed();
 
 const QrCode = dynamic(
   () => import('react-qr-code').then((m) => m.default),
@@ -42,11 +48,7 @@ export function UserBookingBalancePay({
     setLoading(true);
     setError(null);
     try {
-      const result = await publicPost<BookingPayResult>(
-        `/bookings/${bookingId}/pay`,
-        tenant,
-        { kind: 'balance' },
-      );
+      const result = await startBalancePaymentUseCase(tenant, bookingId);
       setPayment(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('payBalanceFailed'));
@@ -60,11 +62,8 @@ export function UserBookingBalancePay({
     setPolling(true);
     const id = window.setInterval(async () => {
       try {
-        const booking = await publicGet<{ remainingBalance?: number }>(
-          `/bookings/${bookingId}`,
-          tenant,
-        );
-        if ((booking.remainingBalance ?? 0) <= 0) {
+        const outcome = await pollBalanceClearedUseCase(tenant, bookingId);
+        if (outcome.kind === 'cleared') {
           window.clearInterval(id);
           queryClient.invalidateQueries({
             queryKey: publicBookingKeys.detail(tenant, bookingId),
@@ -86,11 +85,9 @@ export function UserBookingBalancePay({
     if (!payment) return;
     setLoading(true);
     try {
-      await publicPost('/webhooks/qpay/simulate', tenant, {
-        invoice_id: payment.invoiceId,
-        payment_id: `sim-${Date.now()}`,
-        payment_status: 'PAID',
-        payment_amount: payment.amount,
+      await simulateQpayPaymentUseCase(tenant, {
+        invoiceId: payment.invoiceId,
+        amount: payment.amount,
       });
       queryClient.invalidateQueries({
         queryKey: publicBookingKeys.detail(tenant, bookingId),

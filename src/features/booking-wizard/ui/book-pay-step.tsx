@@ -6,17 +6,24 @@ import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { publicGet, publicPost } from '@/shared/lib/public-api';
-import type { BookingPayResult } from '@/entities/booking';
+import {
+  formatMnt,
+  resolveBalanceDue,
+  resolveDepositAmount,
+} from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
-import { env } from '@/shared/config/env';
+import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import {
   clearBookingDraft,
   readBookingDraft,
-  writeBookingDraft,
+  type BookingPaymentSession,
 } from '../lib/booking-session';
-import { formatMnt } from '@/entities/booking';
+import {
+  pollDepositConfirmationUseCase,
+  simulateQpayPaymentUseCase,
+  startDepositPaymentUseCase,
+} from '../model/payment-use-cases';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { BookingServicesSummary } from './booking-services-summary';
 import { Button } from '@/shared/ui/button';
@@ -26,9 +33,7 @@ const QrCode = dynamic(
   { ssr: false },
 );
 
-const simulateEnabled =
-  process.env.NEXT_PUBLIC_QPAY_SIMULATE_ENABLED === 'true' ||
-  env.APP_ENV !== 'production';
+const simulateEnabled = isQpaySimulateAllowed();
 
 export function BookPayStep() {
   const router = useRouter();
@@ -36,7 +41,7 @@ export function BookPayStep() {
   const locale = useLocale();
   const t = useTranslations('bookingWizard');
   const draft = readBookingDraft();
-  const [payment, setPayment] = useState(draft.payment);
+  const [payment, setPayment] = useState<BookingPaymentSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [polling, setPolling] = useState(false);
@@ -58,21 +63,19 @@ export function BookPayStep() {
     void (async () => {
       setLoading(true);
       try {
-        const result = await publicPost<BookingPayResult>(
-          `/bookings/${draft.booking!.id}/pay`,
+        const result = await startDepositPaymentUseCase(
           tenant,
-          { kind: 'deposit' },
+          draft.booking!.id,
+          draft.booking!.totalPrice,
         );
-        const next = {
+        setPayment({
           paymentId: result.paymentId,
           invoiceId: result.invoiceId,
-          amount: result.amount ?? draft.booking!.totalPrice,
+          amount: result.amount,
           qrText: result.qrText,
           qrImage: result.qrImage,
           urls: result.urls ?? [],
-        };
-        setPayment(next);
-        writeBookingDraft({ payment: next });
+        });
       } catch (e) {
         setError(e instanceof Error ? e.message : t('errors.paymentFailed'));
       } finally {
@@ -109,15 +112,15 @@ export function BookPayStep() {
     setPolling(true);
     const id = window.setInterval(async () => {
       try {
-        const booking = await publicGet<{ status: string }>(
-          `/bookings/${draft.booking!.id}`,
+        const outcome = await pollDepositConfirmationUseCase(
           tenant,
+          draft.booking!.id,
         );
-        if (booking.status === 'confirmed') {
+        if (outcome.kind === 'confirmed') {
           window.clearInterval(id);
           router.push(`${ROUTES.BOOK_CONFIRM}/${draft.booking!.id}`);
         }
-        if (booking.status === 'expired') {
+        if (outcome.kind === 'expired') {
           window.clearInterval(id);
           handleLockExpired();
         }
@@ -135,11 +138,9 @@ export function BookPayStep() {
     if (!payment || !draft.booking) return;
     setLoading(true);
     try {
-      await publicPost('/webhooks/qpay/simulate', tenant, {
-        invoice_id: payment.invoiceId,
-        payment_id: `sim-${Date.now()}`,
-        payment_status: 'PAID',
-        payment_amount: payment.amount,
+      await simulateQpayPaymentUseCase(tenant, {
+        invoiceId: payment.invoiceId,
+        amount: payment.amount,
       });
       router.push(`${ROUTES.BOOK_CONFIRM}/${draft.booking.id}`);
     } catch (e) {
@@ -151,14 +152,19 @@ export function BookPayStep() {
 
   const retryPayment = () => {
     setPayment(null);
-    writeBookingDraft({ payment: null });
+    setError(null);
   };
 
-  const depositAmount =
-    draft.booking?.depositAmount ?? payment?.amount ?? draft.booking?.totalPrice ?? 0;
-  const balanceDue =
-    draft.booking?.balanceDue ??
-    Math.max(0, (draft.booking?.totalPrice ?? 0) - depositAmount);
+  const depositAmount = resolveDepositAmount({
+    depositAmount: draft.booking?.depositAmount,
+    paymentAmount: payment?.amount,
+    totalPrice: draft.booking?.totalPrice ?? 0,
+  });
+  const balanceDue = resolveBalanceDue({
+    balanceDue: draft.booking?.balanceDue,
+    totalPrice: draft.booking?.totalPrice ?? 0,
+    depositAmount,
+  });
   const amount = payment?.amount ?? depositAmount;
 
   return (

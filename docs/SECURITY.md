@@ -54,3 +54,19 @@ Optional OIDC login via `/api/auth/oauth/authorize` and callback page at `/oauth
 
 - Backend [Security](https://github.com/devTugu/nestjs-fsd-portfolio-template/blob/main/docs/SECURITY.md)
 - [ADR 002](adr/002-bff-httponly-auth.md)
+
+## Public BFF allowlist
+
+`src/shared/config/public-bff-allowlist.ts` defines public API paths the `/api/public/*` proxy may forward. Requests outside the allowlist return 403.
+
+### QPay simulate gate
+
+`POST /public/webhooks/qpay/simulate` is **not** on the static allowlist. The proxy allows it only when `isQpaySimulateAllowed()` is true:
+
+| Environment | Default | Override |
+|-------------|---------|----------|
+| non-production | allowed | `NEXT_PUBLIC_QPAY_SIMULATE_ENABLED=false` forces off |
+| production | **blocked** | `NEXT_PUBLIC_QPAY_SIMULATE_ENABLED=true` required to enable |
+
+UI simulate buttons use the same helper so client and BFF stay aligned. Never rely on hiding the button alone.
+

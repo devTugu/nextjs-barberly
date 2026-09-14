@@ -46,7 +46,21 @@ Large features will keep coming. Place them before writing UI:
 
 Do not dump new screens into `widgets` if they are a single user action. Do not put tenant-specific copy into `shared`.
 
-## Parked polish (not blocking 10/10 FSD)
+## Application use-cases (Clean Architecture)
+
+Money and booking orchestration lives in testable modules, not React event handlers:
+
+| Concern | Home |
+|---------|------|
+| Deposit / balance pay, poll, QPay simulate | `entities/booking/lib/payment-use-cases.ts` |
+| Lock slot + route to OTP/pay | `features/booking-wizard/model/lock-slot-use-case.ts` |
+| Pure deposit/balance math | `entities/booking/lib/payment-amounts.ts` |
+| Ephemeral QPay QR/urls | React state only — never `sessionStorage` |
+
+`app` may import `features` and `widgets` through slice `index.ts` (enforced by ESLint). Features never import other features.
+
+## Parked polish (not blocking product delivery)
+
 
 These are left for later on purpose:
 

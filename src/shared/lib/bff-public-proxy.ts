@@ -6,34 +6,9 @@ import {
   BffPathError,
   normalizeBffPath,
 } from '@/shared/config/bff-allowlist';
-import { PUBLIC_BFF_ROUTE_DEFINITIONS } from '@/shared/config/public-bff-allowlist';
-
-type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
-
-function pathToPattern(path: string): RegExp {
-  const escaped = path
-    .split('/')
-    .map((segment) => {
-      if (segment.startsWith(':')) return '[^/]+';
-      return segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    })
-    .join('/');
-  return new RegExp(`^${escaped}$`);
-}
-
-const PUBLIC_PATTERNS = PUBLIC_BFF_ROUTE_DEFINITIONS.map(({ path, methods }) => ({
-  pattern: pathToPattern(path),
-  methods: new Set<HttpMethod>(methods),
-}));
+import { isPublicBffPathAllowed } from '@/shared/config/public-bff-allowlist';
 
 const MUTATING = new Set(['POST', 'PATCH', 'DELETE']);
-
-function isPublicPathAllowed(path: string, method: string): boolean {
-  const httpMethod = method.toUpperCase() as HttpMethod;
-  return PUBLIC_PATTERNS.some(
-    ({ pattern, methods }) => pattern.test(path) && methods.has(httpMethod),
-  );
-}
 
 export async function proxyToPublicBackend(
   request: NextRequest,
@@ -58,7 +33,7 @@ export async function proxyToPublicBackend(
   }
 
   const fullPath = `/public${upstreamPath}`;
-  if (!isPublicPathAllowed(fullPath, request.method)) {
+  if (!isPublicBffPathAllowed(fullPath, request.method)) {
     return NextResponse.json(
       {
         success: false,

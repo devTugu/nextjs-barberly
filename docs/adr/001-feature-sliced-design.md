@@ -28,6 +28,8 @@ processes → shared
 
 Import rules (enforced by `eslint-plugin-boundaries`):
 
+- **App may import features and widgets** through their `index.ts` public APIs (this is intentional FSD for Next.js route composition).
+
 - Upper layers import lower layers only.
 - Features **cannot** import widgets or other features.
 - Shared **cannot** import entities, features, or widgets.

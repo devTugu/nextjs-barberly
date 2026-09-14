@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { Info } from 'lucide-react';
 import type { PolicyReasonCode } from '@/entities/booking';
-import { env } from '@/shared/config/env';
 import { publicGet } from '@/shared/lib/public-api';
 import {
   Tooltip,
@@ -11,10 +10,6 @@ import {
   TooltipTrigger,
 } from '@/shared/ui/tooltip';
 import { useTranslations } from 'next-intl';
-
-export const simulateEnabled =
-  process.env.NEXT_PUBLIC_QPAY_SIMULATE_ENABLED === 'true' ||
-  env.APP_ENV !== 'production';
 
 const POLICY_REASON_CODES: PolicyReasonCode[] = [
   'BOOKING_NOT_ACTIVE',
