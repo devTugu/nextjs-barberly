@@ -9,8 +9,8 @@ import { toast } from 'sonner';
 import {
   manualBookingSchema,
   type ManualBookingFormValues,
-  useCreateManualBooking,
 } from '@/entities/booking';
+import { useCreateManualBooking } from '../api/booking-mutations';
 import { useServices } from '@/entities/service';
 import { useStaffList } from '@/entities/staff';
 import { useAuthPermissions } from '@/entities/session';

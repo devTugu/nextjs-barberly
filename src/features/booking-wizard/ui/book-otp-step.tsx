@@ -7,11 +7,11 @@ import { Loader2 } from 'lucide-react';
 import { env } from '@/shared/config/env';
 import { ROUTES } from '@/shared/config/routes';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
-import { fetchCustomerSession } from '@/entities/customer';
 import { readBookingDraft, writeBookingDraft } from '../lib/booking-session';
 import {
   resolveOtpDevHint,
   sendBookingOtpUseCase,
+  shouldSkipBookingOtpUseCase,
   verifyBookingOtpUseCase,
 } from '../model/otp-use-case';
 import { BookingWizardShell } from './booking-wizard-shell';
@@ -38,10 +38,8 @@ export function BookOtpStep() {
       router.replace(ROUTES.BOOK);
       return;
     }
-    void fetchCustomerSession(tenant).then((session) => {
-      if (session && !session.needsProfile) {
-        router.replace(ROUTES.BOOK_PAY);
-      }
+    void shouldSkipBookingOtpUseCase(tenant).then((skip) => {
+      if (skip) router.replace(ROUTES.BOOK_PAY);
     });
   }, [draft.booking, router, tenant]);
 

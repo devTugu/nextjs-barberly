@@ -16,7 +16,7 @@ processes → shared
 | `features/` | User actions (tables, sheets, wizards) | `src/features/<slice>/index.ts` |
 | `entities/` | Models, API clients, entity UI, session | `src/entities/<slice>/index.ts` |
 | `shared/` | UI kit, config, i18n, utilities | any file (not sliced) |
-| `processes/` | Proxy / request guards | any file |
+| `processes/` (providers, proxy, booking-checkout composition) | Proxy / request guards | any file |
 
 ESLint (`eslint-plugin-boundaries`) fails inverted imports and deep slice paths.
 
@@ -52,7 +52,10 @@ Money and booking orchestration lives in testable modules, not React event handl
 
 | Concern | Home |
 |---------|------|
-| Deposit / balance pay, poll, QPay simulate | `entities/booking/lib/payment-use-cases.ts` |
+| Deposit / balance pay, poll, watch ports, QPay simulate | `entities/booking/lib/payment-use-cases.ts` |
+| Offline settle / reopen rules | `entities/booking/lib/settlement-rules.ts` + `settlement-use-cases.ts` |
+| Deposit/balance React adapters | `features/*/model/use-*-payment-flow.ts` |
+| OTP send/verify/skip | `features/booking-wizard/model/otp-use-case.ts` |
 | Lock slot + route to OTP/pay | `features/booking-wizard/model/lock-slot-use-case.ts` |
 | Pure deposit/balance math | `entities/booking/lib/payment-amounts.ts` |
 | Ephemeral QPay QR/urls | React state only — never `sessionStorage` |

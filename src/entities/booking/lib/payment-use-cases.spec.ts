@@ -17,6 +17,8 @@ import {
   simulateQpayPaymentUseCase,
   startBalancePaymentUseCase,
   startDepositPaymentUseCase,
+  watchBalanceClearedUseCase,
+  watchDepositConfirmationUseCase,
 } from './payment-use-cases';
 
 describe('payment-use-cases', () => {
@@ -161,5 +163,21 @@ describe('payment-use-cases', () => {
         wait,
       }),
     ).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('watchDepositConfirmationUseCase calls onConfirmed port', async () => {
+    publicGet.mockResolvedValueOnce({ status: 'confirmed' });
+    const onConfirmed = vi.fn();
+    const onExpired = vi.fn();
+    await watchDepositConfirmationUseCase('demo', 1, { onConfirmed, onExpired });
+    expect(onConfirmed).toHaveBeenCalledTimes(1);
+    expect(onExpired).not.toHaveBeenCalled();
+  });
+
+  it('watchBalanceClearedUseCase calls onCleared port', async () => {
+    publicGet.mockResolvedValueOnce({ remainingBalance: 0 });
+    const onCleared = vi.fn();
+    await watchBalanceClearedUseCase('demo', 1, { onCleared });
+    expect(onCleared).toHaveBeenCalledTimes(1);
   });
 });

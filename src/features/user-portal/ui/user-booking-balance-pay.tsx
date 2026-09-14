@@ -1,22 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import {
-  awaitBalanceClearedUseCase,
-  formatMnt,
-  publicBookingKeys,
-  simulateQpayPaymentUseCase,
-  startBalancePaymentUseCase,
-  type BookingPayResult,
-} from '@/entities/booking';
+import { formatMnt, simulateQpayPaymentUseCase } from '@/entities/booking';
 import { Button } from '@/shared/ui/button';
 import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
-import { isAbortError } from '@/shared/lib/abortable-wait';
+import { useBalancePaymentFlow } from '../model/use-balance-payment-flow';
 
 const simulateEnabled = isQpaySimulateAllowed();
 
@@ -37,52 +29,27 @@ export function UserBookingBalancePay({
   const t = useTranslations('userPortal');
   const tPay = useTranslations('bookingWizard.pay');
   const locale = useLocale();
-  const queryClient = useQueryClient();
-  const [payment, setPayment] = useState<BookingPayResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [polling, setPolling] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const startPayment = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await startBalancePaymentUseCase(tenant, bookingId);
-      setPayment(result);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t('payBalanceFailed'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!payment) return;
-    const controller = new AbortController();
-    setPolling(true);
-
-    void (async () => {
-      try {
-        await awaitBalanceClearedUseCase(tenant, bookingId, {
-          signal: controller.signal,
-        });
-        queryClient.invalidateQueries({
-          queryKey: publicBookingKeys.detail(tenant, bookingId),
-        });
+  const adapters = useMemo(
+    () => ({
+      onCleared: () => {
         toast.success(t('payBalanceSuccess'));
-        setPayment(null);
-      } catch (e) {
-        if (isAbortError(e)) return;
-      } finally {
-        if (!controller.signal.aborted) setPolling(false);
-      }
-    })();
+      },
+    }),
+    [t],
+  );
 
-    return () => {
-      controller.abort();
-      setPolling(false);
-    };
-  }, [bookingId, payment, queryClient, t, tenant]);
+  const {
+    payment,
+    loading,
+    polling,
+    error,
+    startPayment,
+    clearPayment,
+    setError,
+    setLoading,
+    invalidateBooking,
+  } = useBalancePaymentFlow(tenant, bookingId, adapters);
 
   const simulatePay = async () => {
     if (!payment) return;
@@ -92,11 +59,9 @@ export function UserBookingBalancePay({
         invoiceId: payment.invoiceId,
         amount: payment.amount,
       });
-      queryClient.invalidateQueries({
-        queryKey: publicBookingKeys.detail(tenant, bookingId),
-      });
+      await invalidateBooking();
       toast.success(t('payBalanceSuccess'));
-      setPayment(null);
+      clearPayment();
     } catch (e) {
       setError(e instanceof Error ? e.message : t('payBalanceFailed'));
     } finally {
@@ -108,9 +73,7 @@ export function UserBookingBalancePay({
     return (
       <div className="space-y-3 rounded-xl border p-4">
         <p className="text-sm text-muted-foreground">{tPay('scanQr')}</p>
-        <p className="text-2xl font-bold">
-          {formatMnt(payment.amount, locale)}
-        </p>
+        <p className="text-2xl font-bold">{formatMnt(payment.amount, locale)}</p>
         <div className="flex justify-center rounded-xl border bg-white p-4">
           {payment.qrImage ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -138,14 +101,14 @@ export function UserBookingBalancePay({
         ) : null}
         {simulateEnabled ? (
           <Button
-            onClick={simulatePay}
+            onClick={() => void simulatePay()}
             disabled={loading}
             className="min-h-11 w-full"
           >
             {tPay('simulate')}
           </Button>
         ) : null}
-        <Button variant="ghost" onClick={() => setPayment(null)}>
+        <Button variant="ghost" onClick={clearPayment}>
           {t('back')}
         </Button>
       </div>

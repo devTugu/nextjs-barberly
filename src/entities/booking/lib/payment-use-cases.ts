@@ -1,5 +1,5 @@
 import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
-import { abortableWait, type WaitFn } from '@/shared/lib/abortable-wait';
+import { abortableWait, isAbortError, type WaitFn } from '@/shared/lib/abortable-wait';
 import type { BookingPayResult } from '../api/public-booking';
 import {
   isBalanceCleared,
@@ -130,5 +130,59 @@ export async function awaitBalanceClearedUseCase(
       return 'cleared';
     }
     await wait(intervalMs, options.signal);
+  }
+}
+
+export interface DepositWatchPorts {
+  onConfirmed: () => void | Promise<void>;
+  onExpired: () => void | Promise<void>;
+}
+
+/**
+ * Awaits deposit confirmation and dispatches framework-free ports.
+ * UI supplies router/toast via ports; abort is swallowed (unmount).
+ */
+export async function watchDepositConfirmationUseCase(
+  tenant: string,
+  bookingId: number,
+  ports: DepositWatchPorts,
+  options: AwaitPaymentOptions = {},
+): Promise<void> {
+  try {
+    const outcome = await awaitDepositConfirmationUseCase(
+      tenant,
+      bookingId,
+      options,
+    );
+    if (outcome === 'confirmed') {
+      await ports.onConfirmed();
+      return;
+    }
+    await ports.onExpired();
+  } catch (error) {
+    if (isAbortError(error) || options.signal?.aborted) return;
+    throw error;
+  }
+}
+
+export interface BalanceWatchPorts {
+  onCleared: () => void | Promise<void>;
+}
+
+/**
+ * Awaits balance cleared and notifies via port (invalidate/toast live here).
+ */
+export async function watchBalanceClearedUseCase(
+  tenant: string,
+  bookingId: number,
+  ports: BalanceWatchPorts,
+  options: AwaitPaymentOptions = {},
+): Promise<void> {
+  try {
+    await awaitBalanceClearedUseCase(tenant, bookingId, options);
+    await ports.onCleared();
+  } catch (error) {
+    if (isAbortError(error) || options.signal?.aborted) return;
+    throw error;
   }
 }

@@ -1,4 +1,5 @@
 import {
+  fetchCustomerSession,
   sendCustomerOtp,
   verifyCustomerOtp,
   type FetchLike,
@@ -35,4 +36,12 @@ export async function verifyBookingOtpUseCase(
 /** Prefer explicit dev code from send response when present. */
 export function resolveOtpDevHint(result: SendOtpResult): string | null {
   return result.devCode ?? result.devBypassCode ?? null;
+}
+
+/** Skip OTP when the customer already has an authenticated profile session. */
+export async function shouldSkipBookingOtpUseCase(
+  tenant: string,
+): Promise<boolean> {
+  const session = await fetchCustomerSession(tenant);
+  return session !== null && !session.needsProfile;
 }

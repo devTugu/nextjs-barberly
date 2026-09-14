@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { useLocale, useTranslations } from 'next-intl';
@@ -14,18 +14,13 @@ import {
 } from '@/entities/booking';
 import { ROUTES } from '@/shared/config/routes';
 import { isQpaySimulateAllowed } from '@/shared/config/qpay-simulate';
-import { isAbortError } from '@/shared/lib/abortable-wait';
 import { useTenantSubdomain } from '@/shared/hooks/use-tenant-subdomain';
 import {
   clearBookingDraft,
   readBookingDraft,
-  type BookingPaymentSession,
 } from '../lib/booking-session';
-import {
-  awaitDepositConfirmationUseCase,
-  simulateQpayPaymentUseCase,
-  startDepositPaymentUseCase,
-} from '../model/payment-use-cases';
+import { simulateQpayPaymentUseCase } from '../model/payment-use-cases';
+import { useDepositPaymentFlow } from '../model/use-deposit-payment-flow';
 import { BookingWizardShell } from './booking-wizard-shell';
 import { BookingServicesSummary } from './booking-services-summary';
 import { Button } from '@/shared/ui/button';
@@ -43,10 +38,6 @@ export function BookPayStep() {
   const locale = useLocale();
   const t = useTranslations('bookingWizard');
   const draft = readBookingDraft();
-  const [payment, setPayment] = useState<BookingPaymentSession | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [polling, setPolling] = useState(false);
   const [lockLabel, setLockLabel] = useState<string | null>(null);
 
   const handleLockExpired = () => {
@@ -55,36 +46,33 @@ export function BookPayStep() {
     router.replace(ROUTES.BOOK_SLOT);
   };
 
-  useEffect(() => {
-    if (!draft.booking) {
-      router.replace(ROUTES.BOOK);
-      return;
-    }
-    if (payment) return;
+  const bookingId = draft.booking?.id ?? null;
+  const totalPrice = draft.booking?.totalPrice ?? 0;
 
-    void (async () => {
-      setLoading(true);
-      try {
-        const result = await startDepositPaymentUseCase(
-          tenant,
-          draft.booking!.id,
-          draft.booking!.totalPrice,
-        );
-        setPayment({
-          paymentId: result.paymentId,
-          invoiceId: result.invoiceId,
-          amount: result.amount,
-          qrText: result.qrText,
-          qrImage: result.qrImage,
-          urls: result.urls ?? [],
-        });
-      } catch (e) {
-        setError(e instanceof Error ? e.message : t('errors.paymentFailed'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [draft.booking, payment, router, t, tenant]);
+  const adapters = useMemo(
+    () => ({
+      onConfirmed: (id: number) => {
+        router.push(`${ROUTES.BOOK_CONFIRM}/${id}`);
+      },
+      onExpired: handleLockExpired,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [router, t],
+  );
+
+  const {
+    payment,
+    loading,
+    polling,
+    error,
+    retry,
+    setError,
+    setLoading,
+  } = useDepositPaymentFlow(tenant, bookingId, totalPrice, adapters);
+
+  useEffect(() => {
+    if (!draft.booking) router.replace(ROUTES.BOOK);
+  }, [draft.booking, router]);
 
   useEffect(() => {
     const expires = draft.booking?.lockExpiresAt;
@@ -103,38 +91,8 @@ export function BookPayStep() {
     tick();
     id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [draft.booking?.lockExpiresAt, router, t]);
-
-  useEffect(() => {
-    if (!draft.booking || !payment) return;
-    const controller = new AbortController();
-    setPolling(true);
-
-    void (async () => {
-      try {
-        const outcome = await awaitDepositConfirmationUseCase(
-          tenant,
-          draft.booking!.id,
-          { signal: controller.signal },
-        );
-        if (outcome === 'confirmed') {
-          router.push(`${ROUTES.BOOK_CONFIRM}/${draft.booking!.id}`);
-          return;
-        }
-        handleLockExpired();
-      } catch (e) {
-        if (isAbortError(e)) return;
-        /* keep silent; user can retry via simulate / refresh */
-      } finally {
-        if (!controller.signal.aborted) setPolling(false);
-      }
-    })();
-
-    return () => {
-      controller.abort();
-      setPolling(false);
-    };
-  }, [draft.booking, payment, router, tenant]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.booking?.lockExpiresAt, t]);
 
   const simulatePay = async () => {
     if (!payment || !draft.booking) return;
@@ -152,19 +110,16 @@ export function BookPayStep() {
     }
   };
 
-  const retryPayment = () => {
-    setPayment(null);
-    setError(null);
-  };
+  if (!draft.booking) return null;
 
   const depositAmount = resolveDepositAmount({
-    depositAmount: draft.booking?.depositAmount,
+    depositAmount: draft.booking.depositAmount,
     paymentAmount: payment?.amount,
-    totalPrice: draft.booking?.totalPrice ?? 0,
+    totalPrice: draft.booking.totalPrice,
   });
   const balanceDue = resolveBalanceDue({
-    balanceDue: draft.booking?.balanceDue,
-    totalPrice: draft.booking?.totalPrice ?? 0,
+    balanceDue: draft.booking.balanceDue,
+    totalPrice: draft.booking.totalPrice,
     depositAmount,
   });
   const amount = payment?.amount ?? depositAmount;
@@ -176,7 +131,7 @@ export function BookPayStep() {
           <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </p>
-          <Button variant="outline" size="sm" onClick={retryPayment}>
+          <Button variant="outline" size="sm" onClick={retry}>
             {t('pay.retry')}
           </Button>
         </div>
@@ -186,7 +141,7 @@ export function BookPayStep() {
         <p className="mb-4 text-sm text-muted-foreground">{lockLabel}</p>
       ) : null}
 
-      {draft.booking?.services?.length ? (
+      {draft.booking.services?.length ? (
         <div className="mb-4">
           <BookingServicesSummary
             services={draft.booking.services}
@@ -199,17 +154,17 @@ export function BookPayStep() {
       <div className="rounded-2xl border border-border/60 bg-card p-4">
         <p className="text-sm text-muted-foreground">{t('pay.amount')}</p>
         <p className="mt-1 text-3xl font-bold">{formatMnt(amount, locale)}</p>
-        {draft.booking ? (
-          <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-            <p>
-              {t('pay.depositDue')}: {formatMnt(depositAmount, locale)}
-            </p>
-            <p>
-              {t('pay.balanceDue')}: {formatMnt(balanceDue, locale)}
-            </p>
-            <p>{t('pay.totalLabel')}: {formatMnt(draft.booking.totalPrice, locale)}</p>
-          </div>
-        ) : null}
+        <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+          <p>
+            {t('pay.depositDue')}: {formatMnt(depositAmount, locale)}
+          </p>
+          <p>
+            {t('pay.balanceDue')}: {formatMnt(balanceDue, locale)}
+          </p>
+          <p>
+            {t('pay.totalLabel')}: {formatMnt(draft.booking.totalPrice, locale)}
+          </p>
+        </div>
 
         {loading && !payment ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -253,7 +208,7 @@ export function BookPayStep() {
             ) : null}
             {simulateEnabled ? (
               <Button
-                onClick={simulatePay}
+                onClick={() => void simulatePay()}
                 disabled={loading}
                 className="min-h-11 w-full rounded-xl"
               >
