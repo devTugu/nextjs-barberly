@@ -74,7 +74,9 @@
     "namePlaceholder": "Бат-Очир",
     "nameRequired": "Нэр заавал оруулна",
     "completeRegistration": "Захиалга руу үргэлжлэх",
-    "saveFailed": "Профайл хадгалж чадсангүй"
+    "saveFailed": "Профайл хадгалж чадсангүй",
+    "consentLabel": "Би <terms>Үйлчилгээний нөхцөл</terms> болон <privacy>Нууцлалын бодлого</privacy>-той танилцаж зөвшөөрч байна.",
+    "consentRequired": "Үргэлжлүүлэхийн тулд нөхцөл болон нууцлалыг зөвшөөрнө үү."
   },
   "customerShell": {
     "navLabel": "Үйлчлүүлэгчийн цэс",
@@ -411,7 +413,21 @@
     "address": "Хаяг",
     "openingHours": "Ажиллах цаг",
     "closedDay": "Амарна",
-    "upcomingHolidays": "Удахгүйх амралтын өдрүүд"
+    "upcomingHolidays": "Удахгүйх амралтын өдрүүд",
+    "skipToContent": "Үндсэн агуулга руу очих",
+    "primaryNav": "Үндсэн цэс",
+    "mobileNav": "Мобайл цэс",
+    "openMenu": "Цэс нээх",
+    "closeMenu": "Цэс хаах",
+    "openingBook": "Нээж байна…",
+    "signOut": "Гарах",
+    "bookStartFailed": "Захиалга эхлүүлж чадсангүй. Дахин оролдоно уу.",
+    "visitUs": "Бидэнтэй уулзаарай",
+    "faqHeading": "Түгээмэл асуултууд",
+    "terms": "Нөхцөл",
+    "privacy": "Нууцлал",
+    "termsBody": "Захиалга хийснээр та цагтаа ирж, дэлгүүрийн цуцлалтын бодлогыг дагана.",
+    "privacyBody": "Бид таны утасны дугаарыг зөвхөн захиалга баталгаажуулах, мэдэгдэл илгээхэд ашиглана."
   },
   "auth": {
     "signIn": "Нэвтрэх",
@@ -506,9 +522,6 @@
     "siteSettings": "Сайтын тохиргоо",
     "contactMessages": "Холбоо барих мессеж",
     "navigation": "Навигаци",
-    "platform": "Платформ",
-    "tenants": "Тенант",
-    "analytics": "Аналитик",
     "platform": "Платформ",
     "tenants": "Дэлгүүрүүд",
     "analytics": "Аналитик",

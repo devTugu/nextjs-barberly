@@ -74,7 +74,9 @@
     "namePlaceholder": "Bat-Ochir",
     "nameRequired": "Name is required",
     "completeRegistration": "Continue to booking",
-    "saveFailed": "Could not save profile"
+    "saveFailed": "Could not save profile",
+    "consentLabel": "I agree to the <terms>Terms</terms> and <privacy>Privacy Policy</privacy>.",
+    "consentRequired": "Please accept the Terms and Privacy Policy to continue."
   },
   "customerShell": {
     "navLabel": "Customer navigation",
@@ -411,7 +413,21 @@
     "address": "Address",
     "openingHours": "Opening hours",
     "closedDay": "Closed",
-    "upcomingHolidays": "Upcoming holidays"
+    "upcomingHolidays": "Upcoming holidays",
+    "skipToContent": "Skip to content",
+    "primaryNav": "Primary",
+    "mobileNav": "Mobile navigation",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "openingBook": "Opening…",
+    "signOut": "Sign out",
+    "bookStartFailed": "Could not start booking. Try again.",
+    "visitUs": "Visit us",
+    "faqHeading": "Common questions",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "termsBody": "By booking, you agree to arrive on time and follow the shop’s cancellation policy.",
+    "privacyBody": "We use your phone number only to confirm appointments and send booking updates."
   },
   "auth": {
     "signIn": "Sign in",

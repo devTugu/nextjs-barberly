@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,6 +9,7 @@ import { ROUTES } from '@/shared/config/routes';
 import { fetchCustomerSession } from '@/entities/customer';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { Label } from '@/shared/ui/label';
 
 type AuthStep = 'phone' | 'otp' | 'name';
@@ -38,6 +39,8 @@ export function CustomerAuthFlow({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [otpHint, setOtpHint] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const consentId = useId();
 
   const devOtpBypass = env.OTP_DEV_BYPASS_CODE;
 
@@ -60,6 +63,10 @@ export function CustomerAuthFlow({
 
   const sendOtp = async () => {
     if (!phone.trim()) return;
+    if (!acceptedTerms) {
+      setError(t('consentRequired'));
+      return;
+    }
     setLoading(true);
     setError(null);
     setOtpHint(null);
@@ -175,10 +182,41 @@ export function CustomerAuthFlow({
               className="min-h-12 rounded-xl"
             />
           </div>
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id={consentId}
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+              className="mt-0.5"
+            />
+            <Label
+              htmlFor={consentId}
+              className="text-muted-foreground text-sm font-normal leading-relaxed"
+            >
+              {t.rich('consentLabel', {
+                terms: (chunks) => (
+                  <a
+                    href="#terms"
+                    className="text-foreground underline underline-offset-2"
+                  >
+                    {chunks}
+                  </a>
+                ),
+                privacy: (chunks) => (
+                  <a
+                    href="#privacy"
+                    className="text-foreground underline underline-offset-2"
+                  >
+                    {chunks}
+                  </a>
+                ),
+              })}
+            </Label>
+          </div>
           <Button
             className="min-h-12 w-full rounded-xl text-base"
             onClick={() => void sendOtp()}
-            disabled={!phone.trim() || loading}
+            disabled={!phone.trim() || !acceptedTerms || loading}
           >
             {loading ? <Loader2 className="size-5 animate-spin" /> : t('continue')}
           </Button>

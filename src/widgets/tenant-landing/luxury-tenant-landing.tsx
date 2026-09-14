@@ -42,9 +42,7 @@ function LuxuryTenantLandingBody({
   upcomingHolidays = [],
 }: LuxuryTenantLandingProps) {
   const t = useTranslations('home');
-  const { session } = useTenantLanding();
   const [year] = useState(() => new Date().getFullYear());
-  const isLoggedIn = Boolean(session && !session.needsProfile);
   const navItems = [
     { href: '#about', label: t('navAbout') },
     { href: '#prices', label: t('navPrices') },
@@ -62,7 +60,7 @@ function LuxuryTenantLandingBody({
       }
     >
       <TenantBrandBootstrap />
-      <div className="lg:pl-20">
+      <div id="main" className="lg:pl-20">
         <LuxuryLandingChrome
           tenantName={tenantName}
           logoUrl={settings?.logoUrl}
@@ -70,13 +68,14 @@ function LuxuryTenantLandingBody({
           sidebarBrandName={landingContent.sidebarBrandName}
           establishedYear={landingContent.establishedYear}
           navItems={navItems}
-          isLoggedIn={isLoggedIn}
         />
-        <CustomerBranchPicker
-          preferBookable
-          path={ROUTES.HOME}
-          className="border-b border-white/5 px-4 py-2"
-        />
+        <div className="border-b border-white/[0.06] bg-neutral-950/80 pt-16 sm:pt-[4.25rem]">
+          <CustomerBranchPicker
+            preferBookable
+            path={ROUTES.HOME}
+            className="!space-y-2 border-0 px-5 py-3 text-white sm:px-8 lg:pl-8 [&_button]:border-white/15 [&_button]:bg-white/[0.03] [&_button]:text-white [&_button:hover]:border-white/30 [&_p]:text-white/45"
+          />
+        </div>
         <LuxuryLandingSections
           landingContent={landingContent}
           settings={settings}
@@ -87,7 +86,7 @@ function LuxuryTenantLandingBody({
           tenantName={tenantName}
           year={year}
         />
-        <div className="h-14 lg:hidden" aria-hidden />
+        <div className="h-20 sm:hidden" aria-hidden />
       </div>
     </div>
   );
